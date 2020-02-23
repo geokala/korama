@@ -1,0 +1,12 @@
+[package]
+name = "korama"
+version = "0.1.0"
+authors = ["Madda <nobody@nowhere.local>"]
+edition = "2018"
+publish = false
+description = "Rust based music playback, intended to wander towards some of the features of Amarok (the first one)."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rodio = "0.10.0"
