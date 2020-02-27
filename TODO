@@ -1,7 +1,7 @@
 Make lib:
   Library:
     - Function to scan that path, recursively, adding found mp3s to library listing (based on id3v2 info). (search by extension name is acceptable).
-    - Expected structure: <artist>/<album>/<mp3s>; <artist>/<one-off>
+    - Expected to contain: Artist, Album, Track title, Track number (string- thanks, hidden track fad)
     - Assign <artist>/<album>.jpg as cover art for albums.
     - Support getting alphabetical list of tracks in library.
     - Support getting list by artist then album of tracks in library.
