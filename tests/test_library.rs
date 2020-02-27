@@ -16,56 +16,56 @@ fn create_library() {
 fn get_tracks_by_track_name() {
     let library = set_up_test_library();
 
-    library.scan()
+    library.scan();
 
     let expected = vec![
         korama::Track{
-            String::from("Falling over"),
-            String::from("Another artist"),
-            String::from("The Ignored And the Found"),
-            String::from("2"),
-            String::from("another_artist/good_album/hidden_track.mp3"),
+            track_name: String::from("Falling over"),
+            artist: String::from("Another artist"),
+            album: String::from("The Ignored And the Found"),
+            track_number: String::from("2"),
+            path: String::from("another_artist/good_album/hidden_track.mp3"),
         },
         korama::Track{
-            String::from("First steps"),
-            String::from("A different somebody"),
-            String::from(""),
-            String::from(""),
-            String::from("artist2/live_cover.mp3"),
+            track_name: String::from("First steps"),
+            artist: String::from("A different somebody"),
+            album: String::from(""),
+            track_number: String::from(""),
+            path: String::from("artist2/live_cover.mp3"),
         },
         korama::Track{
-            String::from("First steps"),
-            String::from("Another artist"),
-            String::from("The Ignored And the Found"),
-            String::from("2"),
-            String::from("another_artist/good_album/another_track.mp3"),
+            track_name: String::from("First steps"),
+            artist: String::from("Another artist"),
+            album: String::from("The Ignored And the Found"),
+            track_number: String::from("2"),
+            path: String::from("another_artist/good_album/another_track.mp3"),
         },
         korama::Track{
-            String::from("Not much to write home about"),
-            String::from("A different somebody"),
-            String::from("The Greatest Album of Negligible MP3s"),
-            String::from("1"),
-            String::from("artist2/album/ignored.mp3"),
+            track_name: String::from("Not much to write home about"),
+            artist: String::from("A different somebody"),
+            album: String::from("The Greatest Album of Negligible MP3s"),
+            track_number: String::from("1"),
+            path: String::from("artist2/album/ignored.mp3"),
         },
         korama::Track{
-            String::from("Scream into the mic"),
-            String::from("Somebody"),
-            String::from("Live Bootleg"),
-            String::from(""),
-            String::from("artist1/test.mp3"),
+            track_name: String::from("Scream into the mic"),
+            artist: String::from("Somebody"),
+            album: String::from("Live Bootleg"),
+            track_number: String::from(""),
+            path: String::from("artist1/test.mp3"),
         },
         korama::Track{
-            String::from("The Second Step"),
-            String::from("Another artist"),
-            String::from("The Ignored And the Found"),
-            String::from("1"),
-            String::from("another_artist/good_album/first_track.mp3"),
+            track_name: String::from("The Second Step"),
+            artist: String::from("Another artist"),
+            album: String::from("The Ignored And the Found"),
+            track_number: String::from("1"),
+            path: String::from("another_artist/good_album/first_track.mp3"),
         },
-    ]
+    ];
 
-    let result = library.get_tracks_by_title()
+    let result = library.get_tracks_by_title();
 
-    assert!(result == expected)
+    assert!(result == expected);
 }
 
 
