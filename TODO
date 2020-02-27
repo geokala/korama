@@ -1,9 +1,7 @@
 Make lib:
   Library:
-    - Each library has a path and a name.
     - Function to scan that path, recursively, adding found mp3s to library listing (based on id3v2 info). (search by extension name is acceptable).
     - Expected structure: <artist>/<album>/<mp3s>; <artist>/<one-off>
-    - 'Under the hood', store tracks keyed on sha1 (<sha1>: [<list>, <of>, <paths>, <sharing>, <sha>])
     - Assign <artist>/<album>.jpg as cover art for albums.
     - Support getting alphabetical list of tracks in library.
     - Support getting list by artist then album of tracks in library.
