@@ -1,12 +1,9 @@
 Make lib:
   Library:
-    - Assign <artist>/<album>.jpg as cover art for albums.
     - Support getting list by artist then album of tracks in library.
-    - Support getting list by album in library.
     - Support saving library state to disk (~/.korama/libraries/<name>)
     - Support loading saved libraries.
     - Support listing saved libraries.
-    - Support simple re-scan of library (assumes files with same paths haven't changed, just looking for new files).
   Playlist:
     - Support creating named playlists.
     - Support creating transient playlist.
