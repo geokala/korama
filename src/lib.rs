@@ -1,4 +1,5 @@
 use id3::Tag;
+use std::cmp::Ordering;
 use std::ffi::OsStr;
 use std::path::Path;
 
@@ -84,17 +85,39 @@ impl MusicLibrary {
         );
     }
 
-    pub fn get_tracks_by_title(&self) -> &Vec<Track> {
-        &self.tracks
+    pub fn get_tracks_by_title(&self) -> Vec<Track> {
+        let tracks = &mut self.tracks.clone();
+        tracks.sort_by(|a, b| a.order_by_track(b));
+        tracks.clone()
     }
 }
 
+#[derive(Clone)]
 pub struct Track {
     pub track_name: String,
     pub artist: String,
     pub album: String,
     pub track_number: String,  // Yes, a string, because of hidden tracks on some albums
     pub path: String,
+}
+
+impl Track {
+    fn order_by_track(&self, other: &Self) -> Ordering {
+        let result;
+        if self.track_name > other.track_name {
+            result = Ordering::Greater;
+        } else if self.track_name < other.track_name {
+            result = Ordering::Less;
+        } else {
+            // Artist name breaks ties
+            if self.artist > other.artist {
+                result = Ordering::Greater;
+            } else {
+                result = Ordering::Less;
+            }
+        }
+        result
+    }
 }
 
 impl PartialEq for Track {
