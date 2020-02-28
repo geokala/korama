@@ -4,8 +4,7 @@ use korama;
 #[test]
 fn create_library() {
     let library_name = String::from("My library");
-    // Use empty device name as nothing is expected to be done with the path until instructed to scan.
-    let library_path = String::from("fake_path");
+    let library_path = String::from(".");
     let library = korama::MusicLibrary::new(library_name.clone(), library_path.clone());
 
     assert!(library.get_name() == library_name);
@@ -14,7 +13,7 @@ fn create_library() {
 
 #[test]
 fn get_tracks_by_track_name() {
-    let library = set_up_test_library();
+    let mut library = set_up_test_library();
 
     library.scan();
 
@@ -65,7 +64,7 @@ fn get_tracks_by_track_name() {
 
     let result = library.get_tracks_by_title();
 
-    assert!(result == expected);
+    assert!(result == &expected);
 }
 
 
