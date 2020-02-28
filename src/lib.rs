@@ -32,7 +32,7 @@ impl MusicLibrary {
             let current_path = scan_paths.pop().unwrap();
             for entry in current_path.read_dir().expect("Could not read {}.") {
                 let entry = entry.unwrap().path();
-                if entry.is_file() && entry.extension().unwrap() == OsStr::new(".mp3") {
+                if entry.is_file() && entry.extension().unwrap() == OsStr::new("mp3") {
                     self.add_track_details(&entry);
                 } else if entry.is_dir() {
                     scan_paths.push(entry.to_path_buf());
@@ -42,13 +42,43 @@ impl MusicLibrary {
     }
 
     fn add_track_details(&mut self, path: &Path) {
-        let tags = Tag::read_from_path(path).unwrap();
+        let tags = match Tag::read_from_path(path) {
+            Ok(res) => res,
+            Err(_) => {
+                println!("Unable to read id3v2 tags for {}", path.display());
+                return;
+            },
+        };
+
+        let track_name: String = match tags.get("TIT2") {
+            Some(res) => res.to_string(),
+            None => {
+                println!("Could not get track name (id3v2 TIT2 tag) for {}", path.display());
+                return;
+            },
+        };
+        let artist: String = match tags.get("TPE1") {
+            Some(res) => res.to_string(),
+            None => {
+                println!("Could not get artist (id3v2 TPE1 tag) for {}", path.display());
+                return;
+            },
+        };
+        let album: String = match tags.get("TALB") {
+            Some(res) => res.to_string(),
+            None => String::from(""),  // Album is not required
+        };
+        let track_number: String = match tags.get("TRCK") {
+            Some(res) => res.to_string(),
+            None => String::from(""),  // Track number is not required
+        };
+
         self.tracks.push(
             Track {
-                track_name: tags.get("TIT2").unwrap().to_string(),
-                artist: tags.get("TPE1").unwrap().to_string(),
-                album: tags.get("TALB").unwrap().to_string(),
-                track_number: tags.get("TRCK").unwrap().to_string(),
+                track_name,
+                artist,
+                album,
+                track_number,
                 path: String::from(path.to_str().unwrap()),
             }
         );
