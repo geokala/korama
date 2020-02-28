@@ -64,9 +64,33 @@ fn get_tracks_by_track_name() {
 
     let result = library.get_tracks_by_title();
 
-    assert!(result == &expected);
+    assert!(result == &expected,
+            "Results not as expected.\nResults were:\n{}\nExpected:\n{}",
+            generate_track_output(result),
+            generate_track_output(&expected),
+            );
 }
 
+fn generate_track_output(tracks: &Vec<korama::Track>) -> String {
+    let mut output = String::from("");
+    output.push_str("Found ");
+    output.push_str(&tracks.len().to_string());
+    output.push_str(" tracks.\n");
+    for track in tracks {
+        output.push_str("Artist: ");
+        output.push_str(&track.artist);
+        output.push_str(", Album: ");
+        output.push_str(&track.album);
+        output.push_str(", Track: ");
+        output.push_str(&track.track_name);
+        output.push_str(", Track number: ");
+        output.push_str(&track.track_number);
+        output.push_str(", Path: ");
+        output.push_str(&track.path);
+        output.push_str("\n");
+    }
+    output
+}
 
 fn set_up_test_library() -> korama::MusicLibrary {
     let mut test_library_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
