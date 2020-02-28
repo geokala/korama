@@ -10,3 +10,4 @@ description = "Rust based music playback, intended to wander towards some of the
 
 [dependencies]
 rodio = "0.10.0"
+id3 = "0.5.0"
