@@ -40,6 +40,13 @@ fn get_tracks_by_track_name() {
             path: String::from("another_artist/good_album/another_track.mp3"),
         },
         korama::Track{
+            track_name: String::from("Ignored"),
+            artist: String::from("Ignored"),
+            album: String::from("Ignored"),
+            track_number: String::from("1"),
+            path: String::from("ignored.mp3"),
+        },
+        korama::Track{
             track_name: String::from("Not much to write home about"),
             artist: String::from("A different somebody"),
             album: String::from("The Greatest Album of Negligible MP3s"),
