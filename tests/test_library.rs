@@ -78,6 +78,73 @@ fn get_tracks_by_track_name() {
             );
 }
 
+#[test]
+fn get_tracks_by_artist_and_album() {
+    let mut library = set_up_test_library();
+
+    library.scan();
+
+    let expected = vec![
+        korama::Track{
+            track_name: String::from("First steps"),
+            artist: String::from("A different somebody"),
+            album: String::from("Ignored"),
+            track_number: String::from("1"),
+            path: get_full_track_path(String::from("artist2/live_cover.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("Not much to write home about"),
+            artist: String::from("A different somebody"),
+            album: String::from("The Greatest Album of Negligible MP3s"),
+            track_number: String::from("1"),
+            path: get_full_track_path(String::from("artist2/album/ignored.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("The Second Step"),
+            artist: String::from("Another artist"),
+            album: String::from("The Ignored And the Found"),
+            track_number: String::from("1"),
+            path: get_full_track_path(String::from("another_artist/good_album/first_track.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("First steps"),
+            artist: String::from("Another artist"),
+            album: String::from("The Ignored And the Found"),
+            track_number: String::from("2"),
+            path: get_full_track_path(String::from("another_artist/good_album/another_track.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("Falling over"),
+            artist: String::from("Another artist"),
+            album: String::from("The Ignored And the Found"),
+            track_number: String::from("2.1"),
+            path: get_full_track_path(String::from("another_artist/good_album/hidden_track.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("Ignored"),
+            artist: String::from("Ignored"),
+            album: String::from("Ignored"),
+            track_number: String::from("1"),
+            path: get_full_track_path(String::from("ignored.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("Scream into the mic"),
+            artist: String::from("Somebody"),
+            album: String::from("Live Bootleg"),
+            track_number: String::from(""),
+            path: get_full_track_path(String::from("artist1/test.mp3")),
+        },
+    ];
+
+    let result = library.get_tracks_by_artist_and_album();
+
+    assert!(result == expected,
+            "Results not as expected.\nResults were:\n{}\nExpected:\n{}",
+            generate_track_output(result),
+            generate_track_output(expected),
+            );
+}
+
 fn generate_track_output(tracks: Vec<korama::Track>) -> String {
     let mut output = String::from("");
     output.push_str("Found ");
