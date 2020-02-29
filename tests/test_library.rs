@@ -12,6 +12,37 @@ fn create_library() {
 }
 
 #[test]
+fn test_save_and_load() {
+    // TODO: Remove saved test libraries
+    let mut saved_library_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    saved_library_path.push("resources/test/library/saved_libraries");
+    
+    {
+        let mut library = set_up_test_library();
+        library.scan();
+        // Ensure we have the expected contents before we save
+        check_tracks_in_library_by_artist_and_album(library);
+        library.save(saved_library_path);
+    }
+
+    // TODO: Check the created file is as expected (for which we need to know how we're saving it)
+
+    let mut library = korama::MusicLibrary::load(saved_library_path, String::from("Test library"));
+    check_tracks_in_library_by_artist_and_album(library);
+
+    // TODO: Remove saved test libraries
+}
+
+#[test]
+fn get_tracks_by_artist_and_album() {
+    let mut library = set_up_test_library();
+
+    library.scan();
+
+    check_tracks_in_library_by_artist_and_album(library);
+}
+
+#[test]
 fn get_tracks_by_track_name() {
     let mut library = set_up_test_library();
 
@@ -78,12 +109,7 @@ fn get_tracks_by_track_name() {
             );
 }
 
-#[test]
-fn get_tracks_by_artist_and_album() {
-    let mut library = set_up_test_library();
-
-    library.scan();
-
+fn check_tracks_in_library_by_artist_and_album(library: korama::MusicLibrary) {
     let expected = vec![
         korama::Track{
             track_name: String::from("First steps"),
