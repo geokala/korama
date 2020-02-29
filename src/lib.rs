@@ -90,6 +90,12 @@ impl MusicLibrary {
         tracks.sort_by(|a, b| a.order_by_track(b));
         tracks.clone()
     }
+
+    pub fn get_tracks_by_artist_and_album(&self) -> Vec<Track> {
+        let tracks = &mut self.tracks.clone();
+        tracks.sort_by(|a, b| a.order_by_artist_and_album(b));
+        tracks.clone()
+    }
 }
 
 #[derive(Clone)]
@@ -114,6 +120,38 @@ impl Track {
                 result = Ordering::Greater;
             } else {
                 result = Ordering::Less;
+            }
+        }
+        result
+    }
+
+    fn order_by_artist_and_album(&self, other: &Self) -> Ordering {
+        let result;
+        if self.artist > other.artist {
+            result = Ordering::Greater;
+        } else if self.artist < other.artist {
+            result = Ordering::Less;
+        } else {
+            // Same artist
+            if self.album > other.album {
+                result = Ordering::Greater;
+            } else if self.album < other.album {
+                result = Ordering::Less;
+            } else {
+                // Same album
+                if self.track_number > other.track_number {
+                    result = Ordering::Greater;
+                } else if self.track_number < other.track_number {
+                    result = Ordering::Less;
+                } else {
+                    // Somebody forgot to put track numbers
+                    // We'll break ties on track name here
+                    if self.track_name > other.track_name {
+                        result = Ordering::Greater;
+                    } else {
+                        result = Ordering::Less;
+                    }
+                }
             }
         }
         result
