@@ -1,7 +1,9 @@
 use id3::Tag;
 use std::cmp::Ordering;
 use std::ffi::OsStr;
-use std::path::Path;
+use std::fs::File;
+use std::io::Write;
+use std::path::{Path, PathBuf};
 
 pub struct MusicLibrary {
     name: String,
@@ -14,6 +16,14 @@ impl MusicLibrary {
         MusicLibrary{
             name,
             path,
+            tracks: Vec::new(),
+        }
+    }
+
+    pub fn load(saved_library_path: String, saved_library_name: String) -> MusicLibrary {
+        MusicLibrary{
+            name: String::from("Hello"),
+            path: String:: from("Yes"),
             tracks: Vec::new(),
         }
     }
@@ -33,8 +43,14 @@ impl MusicLibrary {
             let current_path = scan_paths.pop().unwrap();
             for entry in current_path.read_dir().expect("Could not read {}.") {
                 let entry = entry.unwrap().path();
-                if entry.is_file() && entry.extension().unwrap() == OsStr::new("mp3") {
-                    self.add_track_details(&entry);
+                if entry.is_file() {
+                    let extension = match entry.extension() {
+                        Some(osstr) => osstr,
+                        None => OsStr::new(""),
+                    };
+                    if extension == OsStr::new("mp3") { 
+                        self.add_track_details(&entry);
+                    }
                 } else if entry.is_dir() {
                     scan_paths.push(entry.to_path_buf());
                 }
@@ -95,6 +111,54 @@ impl MusicLibrary {
         let tracks = &mut self.tracks.clone();
         tracks.sort_by(|a, b| a.order_by_artist_and_album(b));
         tracks.clone()
+    }
+
+    pub fn save(&self, library_storage_path: String) {
+        // Finding out what is valid in id3v2 tags turned out to be aggravating.
+        // It might be possible for these to be used, but they will not display well
+        // in most cases, so they'll probably be acceptable.
+        let end_of_field = std::char::from_digit(31, 10).unwrap();
+        let end_of_record = std::char::from_digit(30, 10).unwrap();
+        let end_of_header = std::char::from_digit(29, 10).unwrap();
+
+        let mut library_path = PathBuf::from(library_storage_path);
+        library_path.push(OsStr::new(&self.name));
+        library_path.push(OsStr::new(".lib"));
+
+        let mut data = String::new();
+
+        // Generate header
+        data.push_str(&self.name);
+        data.push(end_of_field);
+        data.push_str(&self.path);
+        data.push(end_of_header);
+
+        // Add tracks
+        for track in &self.tracks {
+            data.push_str(&track.track_name);
+            data.push(end_of_field);
+            data.push_str(&track.artist);
+            data.push(end_of_field);
+            data.push_str(&track.album);
+            data.push(end_of_field);
+            data.push_str(&track.track_number);
+            data.push(end_of_field);
+            data.push_str(&track.path);
+            data.push(end_of_record);
+        };
+
+        let mut library_file = match File::create(&self.path) {
+            Ok(file) => file,
+            Err(err) => panic!("Could not create {}: {:#?}", library_path.display(), err),
+        };
+        match library_file.write_all(data.as_bytes()) {
+            Ok(_) => {},
+            Err(err) => panic!("Could not write to {}: {:#?}", library_path.display(), err),
+        };
+        match library_file.sync_all() {
+            Ok(_) => {},
+            Err(err) => panic!("Could not complete write to {}: {:#?}", library_path.display(), err),
+        };
     }
 }
 
