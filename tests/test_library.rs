@@ -22,7 +22,7 @@ fn test_save_and_load() {
         library.scan();
         // Ensure we have the expected contents before we save
         check_tracks_in_library_by_artist_and_album(library);
-        library.save(saved_library_path);
+        library.save(saved_library_path.to_str().unwrap().to_string());
     }
 
     // TODO: Check the created file is as expected (for which we need to know how we're saving it)
