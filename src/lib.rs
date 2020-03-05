@@ -30,7 +30,7 @@ impl MusicLibrary {
     pub fn load(saved_library_path: String, saved_library_name: String) -> MusicLibrary {
         let mut library_path = PathBuf::from(&saved_library_path);
         library_path.push(OsStr::new(&saved_library_name));
-        library_path.push(OsStr::new(".lib"));
+        library_path.push(OsStr::new(&format!("{}.lib", &saved_library_name)));
 
         let saved_data = match read_to_string(&library_path) {
             Ok(data) => data,
@@ -216,8 +216,7 @@ impl MusicLibrary {
 
     pub fn save(&self, library_storage_path: String) {
         let mut library_path = PathBuf::from(library_storage_path);
-        library_path.push(OsStr::new(&self.name));
-        library_path.push(OsStr::new(".lib"));
+        library_path.push(OsStr::new(&format!("{}.lib", &self.name)));
 
         let mut data = String::new();
 
