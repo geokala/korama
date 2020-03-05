@@ -1,9 +1,16 @@
 use id3::Tag;
 use std::cmp::Ordering;
 use std::ffi::OsStr;
-use std::fs::File;
+use std::fs::{File, read_to_string};
 use std::io::Write;
 use std::path::{Path, PathBuf};
+
+// Finding out what is valid in id3v2 tags turned out to be aggravating.
+// It might be possible for these to be used, but they will not display well
+// in most cases, so they'll probably be acceptable.
+const END_OF_FIELD: char = '\u{1f}';
+const END_OF_RECORD: char = '\u{1e}';
+const END_OF_HEADER: char = '\u{1d}';
 
 pub struct MusicLibrary {
     name: String,
@@ -21,11 +28,105 @@ impl MusicLibrary {
     }
 
     pub fn load(saved_library_path: String, saved_library_name: String) -> MusicLibrary {
+        let mut library_path = PathBuf::from(&saved_library_path);
+        library_path.push(OsStr::new(&saved_library_name));
+        library_path.push(OsStr::new(".lib"));
+
+        let saved_data = match read_to_string(&library_path) {
+            Ok(data) => data,
+            Err(err) => panic!("Could not load library from {}: {:#?}", library_path.display(), err),
+        };
+
+        let header_details = MusicLibrary::process_save_header(&saved_data);
+
+        let tracks = MusicLibrary::load_tracks(&saved_data);
+
         MusicLibrary{
-            name: String::from("Hello"),
-            path: String:: from("Yes"),
-            tracks: Vec::new(),
+            name: header_details[0].to_string(),
+            path: header_details[1].to_string(),
+            tracks: tracks,
         }
+    }
+
+    fn process_save_header(data: &str) -> Vec<String> {
+        let mut field_pos = 0;
+        let mut name = String::new();
+        let mut path = String::new();
+
+        for c in data.chars() {
+            if c == END_OF_FIELD {
+                field_pos += 1;
+            } else if c == END_OF_HEADER {
+                return vec!(name, path);
+            } else if field_pos == 0 {
+                name.push(c);
+            } else {
+                path.push(c);
+            }
+        }
+        panic!("Failed to load header!");
+    }
+
+    fn load_tracks(data: &str) -> Vec<Track> {
+        let mut header_read_complete = false;
+
+        let mut track_details_pos = 0;
+        let mut track_name = String::new();
+        let mut artist = String::new();
+        let mut album = String::new();
+        let mut track_number = String::new();
+        let mut path = String::new();
+
+        let mut tracks: Vec<Track>  = Vec::new();
+
+        // Save file structure:
+        // header:
+        // <library name><END_OF_FIELD><library path><END_OF_HEADER>
+        // Zero or more tracks:
+        // <track name><END_OF_FIELD><artist><END_OF_FIELD><album><END_OF_FIELD><track_number><END_OF_FIELD><path><END_OF_RECORD>
+
+        for c in data.chars() {
+            if c == END_OF_HEADER {
+                header_read_complete = true;
+                continue;
+            }
+
+            if ! header_read_complete {
+                continue;
+            }
+
+            if c == END_OF_RECORD {
+                tracks.push(Track {
+                    track_name: track_name.clone(),
+                    artist: artist.clone(),
+                    album: album.clone(),
+                    track_number: track_number.clone(),
+                    path: path.clone(),
+                });
+
+                track_details_pos = 0;
+                track_name = String::new();
+                artist = String::new();
+                album = String::new();
+                track_number = String::new();
+                path = String::new();
+                continue;
+            }
+
+            if c == END_OF_FIELD {
+                track_details_pos += 1;
+            }
+
+            match track_details_pos {
+                0 => track_name.push(c),
+                1 => artist.push(c),
+                2 => album.push(c),
+                3 => track_number.push(c),
+                4 => path.push(c),
+                _ => panic!("Found too many fields in track."),
+            };
+        }
+        tracks
     }
 
     pub fn get_name(&self) -> &str {
@@ -114,13 +215,6 @@ impl MusicLibrary {
     }
 
     pub fn save(&self, library_storage_path: String) {
-        // Finding out what is valid in id3v2 tags turned out to be aggravating.
-        // It might be possible for these to be used, but they will not display well
-        // in most cases, so they'll probably be acceptable.
-        let end_of_field = std::char::from_digit(31, 10).unwrap();
-        let end_of_record = std::char::from_digit(30, 10).unwrap();
-        let end_of_header = std::char::from_digit(29, 10).unwrap();
-
         let mut library_path = PathBuf::from(library_storage_path);
         library_path.push(OsStr::new(&self.name));
         library_path.push(OsStr::new(".lib"));
@@ -129,22 +223,22 @@ impl MusicLibrary {
 
         // Generate header
         data.push_str(&self.name);
-        data.push(end_of_field);
+        data.push(END_OF_FIELD);
         data.push_str(&self.path);
-        data.push(end_of_header);
+        data.push(END_OF_HEADER);
 
         // Add tracks
         for track in &self.tracks {
             data.push_str(&track.track_name);
-            data.push(end_of_field);
+            data.push(END_OF_FIELD);
             data.push_str(&track.artist);
-            data.push(end_of_field);
+            data.push(END_OF_FIELD);
             data.push_str(&track.album);
-            data.push(end_of_field);
+            data.push(END_OF_FIELD);
             data.push_str(&track.track_number);
-            data.push(end_of_field);
+            data.push(END_OF_FIELD);
             data.push_str(&track.path);
-            data.push(end_of_record);
+            data.push(END_OF_RECORD);
         };
 
         let mut library_file = match File::create(&self.path) {
