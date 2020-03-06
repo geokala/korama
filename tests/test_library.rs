@@ -29,7 +29,7 @@ fn test_save_and_load() {
 
     let library = korama::MusicLibrary::load(saved_library_path.clone(), String::from("Test library"));
     check_tracks_in_library_by_artist_and_album(&library);
-    remove_file(format!("{}/{}", &saved_library_path, String::from("Test library.lib")));
+    remove_file(format!("{}/{}", &saved_library_path, String::from("Test library.lib"))).unwrap();
 }
 
 #[test]
