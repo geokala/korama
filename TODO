@@ -1,6 +1,4 @@
 Make lib:
-  Library:
-    - Support listing saved libraries.
   Playlist:
     - Support creating named playlists.
     - Support creating transient playlist.
