@@ -1,3 +1,4 @@
+use std::fs::remove_file;
 use std::path::PathBuf;
 use korama;
 
@@ -15,6 +16,7 @@ fn create_library() {
 fn test_save_and_load() {
     let mut saved_library_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     saved_library_path.push("resources/test/library/saved_libraries");
+
     let saved_library_path = saved_library_path.to_str().unwrap().to_string();
     
     {
@@ -27,6 +29,7 @@ fn test_save_and_load() {
 
     let library = korama::MusicLibrary::load(saved_library_path.clone(), String::from("Test library"));
     check_tracks_in_library_by_artist_and_album(&library);
+    remove_file(format!("{}/{}", &saved_library_path, String::from("Test library.lib")));
 }
 
 #[test]
