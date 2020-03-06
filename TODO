@@ -1,7 +1,5 @@
 Make lib:
   Library:
-    - Support saving library state to disk (~/.korama/libraries/<name>)
-    - Support loading saved libraries.
     - Support listing saved libraries.
   Playlist:
     - Support creating named playlists.
