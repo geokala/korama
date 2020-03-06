@@ -29,7 +29,6 @@ impl MusicLibrary {
 
     pub fn load(saved_library_path: String, saved_library_name: String) -> MusicLibrary {
         let mut library_path = PathBuf::from(&saved_library_path);
-        library_path.push(OsStr::new(&saved_library_name));
         library_path.push(OsStr::new(&format!("{}.lib", &saved_library_name)));
 
         let saved_data = match read_to_string(&library_path) {
@@ -115,6 +114,7 @@ impl MusicLibrary {
 
             if c == END_OF_FIELD {
                 track_details_pos += 1;
+                continue;
             }
 
             match track_details_pos {
