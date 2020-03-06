@@ -240,7 +240,7 @@ impl MusicLibrary {
             data.push(END_OF_RECORD);
         };
 
-        let mut library_file = match File::create(&self.path) {
+        let mut library_file = match File::create(&library_path) {
             Ok(file) => file,
             Err(err) => panic!("Could not create {}: {:#?}", library_path.display(), err),
         };
