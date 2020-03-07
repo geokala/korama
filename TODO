@@ -2,6 +2,11 @@ Make lib:
   Playlist:
     - Support creating named playlists.
     - Playlist contains list of tracks.
+    - Support adding tracks to playlist.
+    - Support removing track from playlist by position.
+    - Support getting list of tracks from playlist.
+    - Support iterating through playlist.
+    - Support getting track from playlist by index.
     - Support saving named playlist state to disk (~/.korama/playlists/<name>)
     - Support loading saved playlists.
     - Support listing saved playlists.
