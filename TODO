@@ -1,6 +1,5 @@
 Make lib:
   Playlist:
-    - Support removing track from playlist by position.
     - Support iterating through playlist.
     - Support getting track from playlist by index.
     - Support saving named playlist state to disk (~/.korama/playlists/<name>)

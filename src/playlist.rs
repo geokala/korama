@@ -17,11 +17,15 @@ impl Playlist {
         &self.name
     }
 
-    pub fn get_tracks(self) -> Vec<Track> {
-        self.tracks
+    pub fn get_tracks(&self) -> Vec<Track> {
+        self.tracks.clone()
     }
 
     pub fn add_track(&mut self, track: Track) {
         &self.tracks.push(track);
+    }
+
+    pub fn remove_track(&mut self, index: usize) {
+        &self.tracks.remove(index);
     }
 }
