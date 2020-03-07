@@ -1,11 +1,8 @@
 Make lib:
   Playlist:
     - Support creating named playlists.
-    - Support creating transient playlist.
-    - Support converting transient playlist to named.
-    - Playlist contains list of tracks mapped by: <library name>:(<sha1>, <path>, <album>, <artist>)  - Path then artist then album used to break ties in case of multiple copies when files moved
-    - Don't support files being deleted from libraries.
+    - Playlist contains list of tracks.
     - Support saving named playlist state to disk (~/.korama/playlists/<name>)
     - Support loading saved playlists.
     - Support listing saved playlists.
-    - Support <DYNAMIC> tag in playlist.
+    - Support <DYNAMIC> tag in playlist- adds a new track at random from a specific music library or playlist. (trait)
