@@ -1,6 +1,5 @@
 Make lib:
   Playlist:
-    - Support creating named playlists.
     - Playlist contains list of tracks.
     - Support adding tracks to playlist.
     - Support removing track from playlist by position.
