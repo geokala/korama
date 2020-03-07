@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use crate::delimiters::{END_OF_FIELD, END_OF_RECORD};
 
 #[derive(Clone)]
 pub struct Track {
@@ -53,6 +54,19 @@ impl Track {
                 }
             }
         }
+    }
+
+    pub fn dump(&self) -> String {
+        format!(
+            "{name}{field_end}{artist}{field_end}{album}{field_end}{track}{field_end}{path}{record_end}",
+            name = &self.track_name,
+            artist = &self.artist,
+            album = &self.album,
+            track = &self.track_number,
+            path = &self.path,
+            field_end = END_OF_FIELD,
+            record_end = END_OF_RECORD,
+        )
     }
 }
 

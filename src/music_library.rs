@@ -4,13 +4,8 @@ use std::fs::{File, read_to_string};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use crate::track::Track;
+use crate::delimiters::{END_OF_FIELD, END_OF_HEADER, END_OF_RECORD};
 
-// Finding out what is valid in id3v2 tags turned out to be aggravating.
-// It might be possible for these to be used, but they will not display well
-// in most cases, so they'll probably be acceptable.
-const END_OF_FIELD: char = '\u{1f}';
-const END_OF_RECORD: char = '\u{1e}';
-const END_OF_HEADER: char = '\u{1d}';
 
 pub struct MusicLibrary {
     name: String,
@@ -228,16 +223,7 @@ impl MusicLibrary {
 
         // Add tracks
         for track in &self.tracks {
-            data.push_str(&track.track_name);
-            data.push(END_OF_FIELD);
-            data.push_str(&track.artist);
-            data.push(END_OF_FIELD);
-            data.push_str(&track.album);
-            data.push(END_OF_FIELD);
-            data.push_str(&track.track_number);
-            data.push(END_OF_FIELD);
-            data.push_str(&track.path);
-            data.push(END_OF_RECORD);
+            data.push_str(&track.dump());
         };
 
         let mut library_file = match File::create(&library_path) {
