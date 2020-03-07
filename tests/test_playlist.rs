@@ -10,7 +10,7 @@ fn create_playlist() {
 }
 
 #[test]
-fn add_tracks() {
+fn add_and_delete_tracks() {
     let mut playlist = korama::Playlist::new(String::from("Test playlist"));
 
     let example_track_1 = korama::Track {
@@ -27,11 +27,25 @@ fn add_tracks() {
         track_number: String::from("4"),
         path: String::from("/some/other/path"),
     };
+    let example_track_3 = korama::Track {
+        track_name: String::from("Nextrample track"),
+        artist: String::from("Nextrample artist"),
+        album: String::from("Nextrample album"),
+        track_number: String::from("4.2"),
+        path: String::from("/some/other/path/again"),
+    };
 
     playlist.add_track(example_track_1.clone());
     playlist.add_track(example_track_2.clone());
+    playlist.add_track(example_track_3.clone());
 
-    let expected = vec!(example_track_1, example_track_2);
+    let expected = vec!(example_track_1.clone(), example_track_2.clone(), example_track_3.clone());
 
-    assert!(playlist.get_tracks() == expected);
+    assert!(playlist.get_tracks() == expected, "Add tracks failed.");
+
+    playlist.remove_track(1);
+
+    let expected = vec!(example_track_1, example_track_3);
+
+    assert!(playlist.get_tracks() == expected, "Remove tracks failed.");
 }
