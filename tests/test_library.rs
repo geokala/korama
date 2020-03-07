@@ -13,7 +13,7 @@ fn create_library() {
 }
 
 #[test]
-fn test_save_and_load() {
+fn test_save_and_load_library() {
     let mut saved_library_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     saved_library_path.push("resources/test/library/saved_libraries");
 
