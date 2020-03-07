@@ -64,20 +64,14 @@ impl MusicLibrary {
     fn load_tracks(data: &str) -> Vec<Track> {
         let mut header_read_complete = false;
 
-        let mut track_details_pos = 0;
-        let mut track_name = String::new();
-        let mut artist = String::new();
-        let mut album = String::new();
-        let mut track_number = String::new();
-        let mut path = String::new();
+        let mut track_data = String::new();
 
-        let mut tracks: Vec<Track>  = Vec::new();
+        let mut tracks: Vec<Track> = Vec::new();
 
         // Save file structure:
         // header:
         // <library name><END_OF_FIELD><library path><END_OF_HEADER>
-        // Zero or more tracks:
-        // <track name><END_OF_FIELD><artist><END_OF_FIELD><album><END_OF_FIELD><track_number><END_OF_FIELD><path><END_OF_RECORD>
+        // <zero or more tracks (see track for serialisation format)>
 
         for c in data.chars() {
             if c == END_OF_HEADER {
@@ -89,37 +83,12 @@ impl MusicLibrary {
                 continue;
             }
 
+            track_data.push(c);
+
             if c == END_OF_RECORD {
-                tracks.push(Track {
-                    track_name: track_name.clone(),
-                    artist: artist.clone(),
-                    album: album.clone(),
-                    track_number: track_number.clone(),
-                    path: path.clone(),
-                });
-
-                track_details_pos = 0;
-                track_name = String::new();
-                artist = String::new();
-                album = String::new();
-                track_number = String::new();
-                path = String::new();
-                continue;
+                tracks.push(Track::load(track_data));
+                track_data = String::new()
             }
-
-            if c == END_OF_FIELD {
-                track_details_pos += 1;
-                continue;
-            }
-
-            match track_details_pos {
-                0 => track_name.push(c),
-                1 => artist.push(c),
-                2 => album.push(c),
-                3 => track_number.push(c),
-                4 => path.push(c),
-                _ => panic!("Found too many fields in track."),
-            };
         }
         tracks
     }

@@ -11,6 +11,55 @@ pub struct Track {
 }
 
 impl Track {
+    pub fn load(data: String) -> Track {
+        let mut track_details_pos = 0;
+        let mut track_name = String::new();
+        let mut artist = String::new();
+        let mut album = String::new();
+        let mut track_number = String::new();
+        let mut path = String::new();
+
+        for c in data.chars() {
+            if c == END_OF_FIELD {
+                track_details_pos += 1;
+                continue;
+            }
+
+            if c == END_OF_RECORD {
+                return Track {
+                    track_name,
+                    artist,
+                    album,
+                    track_number,
+                    path,
+                };
+            }
+
+            match track_details_pos {
+                0 => track_name.push(c),
+                1 => artist.push(c),
+                2 => album.push(c),
+                3 => track_number.push(c),
+                4 => path.push(c),
+                _ => panic!("Found too many fields in track."),
+            };
+        }
+        panic!("Could not create track, data had no end marker.");
+    }
+
+    pub fn dump(&self) -> String {
+        format!(
+            "{name}{field_end}{artist}{field_end}{album}{field_end}{track}{field_end}{path}{record_end}",
+            name = &self.track_name,
+            artist = &self.artist,
+            album = &self.album,
+            track = &self.track_number,
+            path = &self.path,
+            field_end = END_OF_FIELD,
+            record_end = END_OF_RECORD,
+        )
+    }
+
     pub fn order_by_track(&self, other: &Self) -> Ordering {
         if self.track_name > other.track_name {
             Ordering::Greater
@@ -54,19 +103,6 @@ impl Track {
                 }
             }
         }
-    }
-
-    pub fn dump(&self) -> String {
-        format!(
-            "{name}{field_end}{artist}{field_end}{album}{field_end}{track}{field_end}{path}{record_end}",
-            name = &self.track_name,
-            artist = &self.artist,
-            album = &self.album,
-            track = &self.track_number,
-            path = &self.path,
-            field_end = END_OF_FIELD,
-            record_end = END_OF_RECORD,
-        )
     }
 }
 
