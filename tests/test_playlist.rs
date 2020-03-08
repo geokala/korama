@@ -13,6 +13,22 @@ fn create_playlist() {
 fn add_and_delete_tracks() {
     let mut playlist = korama::Playlist::new(String::from("Test playlist"));
 
+    let example_tracks = get_example_tracks();
+
+    playlist.add_track(example_tracks[0].clone());
+    playlist.add_track(example_tracks[1].clone());
+    playlist.add_track(example_tracks[2].clone());
+
+    assert!(&playlist.get_tracks() == &example_tracks, "Add tracks failed.");
+
+    playlist.remove_track(1);
+
+    let expected = vec!(example_tracks[0].clone(), example_tracks[2].clone());
+
+    assert!(playlist.get_tracks() == expected, "Remove tracks failed.");
+}
+
+fn get_example_tracks() -> Vec<korama::Track> {
     let example_track_1 = korama::Track {
         track_name: String::from("Example track"),
         artist: String::from("Example artist"),
@@ -35,17 +51,5 @@ fn add_and_delete_tracks() {
         path: String::from("/some/other/path/again"),
     };
 
-    playlist.add_track(example_track_1.clone());
-    playlist.add_track(example_track_2.clone());
-    playlist.add_track(example_track_3.clone());
-
-    let expected = vec!(example_track_1.clone(), example_track_2.clone(), example_track_3.clone());
-
-    assert!(playlist.get_tracks() == expected, "Add tracks failed.");
-
-    playlist.remove_track(1);
-
-    let expected = vec!(example_track_1, example_track_3);
-
-    assert!(playlist.get_tracks() == expected, "Remove tracks failed.");
+    vec!(example_track_1, example_track_2, example_track_3)
 }
