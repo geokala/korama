@@ -144,6 +144,40 @@ fn step_back_through_playlist() {
     };
 }
 
+#[test] fn get_specific_tracks_from_playlist() {
+    let mut playlist = korama::Playlist::new(String::from("Test playlist"));
+
+    let example_tracks = get_example_tracks();
+
+    playlist.add_track(example_tracks[0].clone());
+    playlist.add_track(example_tracks[1].clone());
+    playlist.add_track(example_tracks[2].clone());
+
+    let mut track = playlist.get(0);
+    match track {
+        Some(track) => assert!(track == &example_tracks[0], "Failed getting first track- found {}.", track.track_name),
+        None => panic!("Failed getting first track."),
+    };
+
+    track = playlist.get(1);
+    match track {
+        Some(track) => assert!(track == &example_tracks[1], "Failed getting second track- found {}.", track.track_name),
+        None => panic!("Failed getting second track."),
+    };
+
+    track = playlist.get(2);
+    match track {
+        Some(track) => assert!(track == &example_tracks[2], "Failed getting last track- found {}.", track.track_name),
+        None => panic!("Failed getting last track."),
+    };
+
+    track = playlist.get(42);
+    match track {
+        Some(track) => panic!("Found track where there should be none- found {}.", track.track_name),
+        None => println!("Correctly found no track.."),
+    };
+}
+
 fn get_example_tracks() -> Vec<korama::Track> {
     let example_track_1 = korama::Track {
         track_name: String::from("First track"),
