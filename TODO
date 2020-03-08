@@ -1,6 +1,6 @@
 Make lib:
   Playlist:
-    - Support iterating through playlist.
+    - Support stepping back to previous position in playlist.
     - Support getting track from playlist by index.
     - Support saving named playlist state to disk (~/.korama/playlists/<name>)
     - Support loading saved playlists.

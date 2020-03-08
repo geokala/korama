@@ -3,6 +3,7 @@ use crate::track::Track;
 pub struct Playlist {
     name: String,
     tracks: Vec<Track>,
+    pos: usize,
 }
 
 impl Playlist {
@@ -10,6 +11,7 @@ impl Playlist {
         Playlist{
             name,
             tracks: Vec::new(),
+            pos: 0,
         }
     }
 
@@ -27,5 +29,11 @@ impl Playlist {
 
     pub fn remove_track(&mut self, index: usize) {
         &self.tracks.remove(index);
+    }
+
+    pub fn next(&mut self) -> Option<&Track> {
+        self.pos += 1;
+
+        self.tracks.get(self.pos - 1)
     }
 }
