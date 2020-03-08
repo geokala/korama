@@ -57,4 +57,8 @@ impl Playlist {
         };
         result
     }
+
+    pub fn get(&self, pos: usize) -> Option<&Track> {
+        self.tracks.get(pos)
+    }
 }
