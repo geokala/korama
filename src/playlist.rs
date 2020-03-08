@@ -1,9 +1,10 @@
 use crate::track::Track;
+use std::cmp::min;
 
 pub struct Playlist {
     name: String,
     tracks: Vec<Track>,
-    pos: usize,
+    pos: Option<usize>,
 }
 
 impl Playlist {
@@ -11,7 +12,7 @@ impl Playlist {
         Playlist{
             name,
             tracks: Vec::new(),
-            pos: 0,
+            pos: None,
         }
     }
 
@@ -32,8 +33,28 @@ impl Playlist {
     }
 
     pub fn next(&mut self) -> Option<&Track> {
-        self.pos += 1;
+        match self.pos {
+            Some(pos) => self.pos = Some(min(pos + 1, self.tracks.len())),
+            None => self.pos = Some(0),
+        };
 
-        self.tracks.get(self.pos - 1)
+        self.tracks.get(self.pos.unwrap())
+    }
+
+    pub fn prev(&mut self) -> Option<&Track> {
+        let mut result = None;
+        match self.pos {
+            Some(pos) => {
+                if pos == 0 {
+                    self.pos = None;
+                    result = None;
+                } else {
+                    self.pos = Some(pos - 1);
+                    result = self.tracks.get(self.pos.unwrap());
+                }
+            }
+            None => (),
+        };
+        result
     }
 }
