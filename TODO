@@ -4,3 +4,15 @@ Make lib:
     - Support loading saved playlists.
     - Support listing saved playlists.
     - Support <DYNAMIC> tag in playlist- adds a new track at random from a specific music library or playlist. (trait)
+
+  Queue:
+    - Support adding track to queue.
+    - Support removing track from queue.
+    - Ensure next track in queue always pre-loads the track data.
+    - Support playing current track.
+    - Support pausing current track.
+    - Support resuming current track.
+    - Support jumping to start of current track.
+    - Support skipping current track.
+    - Support setting previous track on queue (pre-loaded).
+    - Support jumping to previous track.
