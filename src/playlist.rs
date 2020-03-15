@@ -1,5 +1,13 @@
+use crate::delimiters::{END_OF_FIELD, END_OF_HEADER};
 use crate::track::Track;
+use crate::shared::Saveable;
 use std::cmp::min;
+use std::ffi::OsStr;
+use std::fs::read_to_string;
+use std::path::PathBuf;
+
+const EXTENSION: &str = "playlist";
+
 
 pub struct Playlist {
     name: String,
@@ -16,12 +24,33 @@ impl Playlist {
         }
     }
 
-    pub fn get_name(&self) -> &str {
-        &self.name
+    pub fn load(saved_playlist_path: String, saved_playlist_name: String) -> Playlist {
+        let mut playlist_path = PathBuf::from(&saved_playlist_path);
+        playlist_path.push(OsStr::new(&format!("{}.{}", &saved_playlist_name, &EXTENSION)));
+
+        let saved_data = match read_to_string(&playlist_path) {
+            Ok(data) => data,
+            Err(err) => panic!("Could not load playlist from {}: {:#?}", playlist_path.display(), err),
+        };
+
+        let header_details = Playlist::process_save_header(&saved_data);
+
+        let tracks = Playlist::load_tracks(&saved_data);
+
+        let pos = match header_details[1].parse::<usize>() {
+            Ok(pos) => pos,
+            Err(err) => panic!("Could not parse playlist position in {}: {:#?}", playlist_path.display(), err),
+        };
+
+        Playlist{
+            name: header_details[0].to_string(),
+            pos: Some(pos),
+            tracks: tracks,
+        }
     }
 
-    pub fn get_tracks(&self) -> Vec<Track> {
-        self.tracks.clone()
+    pub fn reset_position(&mut self) {
+        self.pos = None;
     }
 
     pub fn add_track(&mut self, track: Track) {
@@ -60,5 +89,31 @@ impl Playlist {
 
     pub fn get(&self, pos: usize) -> Option<&Track> {
         self.tracks.get(pos)
+    }
+}
+
+impl Saveable for Playlist {
+    fn get_extension(&self) -> &str {
+        EXTENSION
+    }
+
+    fn get_name(&self) -> &str {
+        &self.name
+    }
+
+    fn get_tracks(&self) -> Vec<Track> {
+        self.tracks.clone()
+    }
+
+    fn get_header(&self) -> String {
+        let mut header = String::new();
+
+        // Generate header
+        header.push_str(&self.name);
+        header.push(END_OF_FIELD);
+        header.push_str(&self.pos.unwrap().to_string());
+        header.push(END_OF_HEADER);
+
+        header
     }
 }
