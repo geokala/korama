@@ -1,6 +1,7 @@
 use std::fs::remove_file;
 use std::path::PathBuf;
 use korama;
+use korama::Saveable;
 
 #[test]
 fn create_library() {

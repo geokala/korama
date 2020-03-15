@@ -1,4 +1,7 @@
+use std::fs::remove_file;
+use std::path::PathBuf;
 use korama;
+use korama::Saveable;
 
 #[test]
 fn create_playlist() {
@@ -29,6 +32,32 @@ fn add_and_delete_tracks_in_playlist() {
 }
 
 #[test]
+fn test_save_and_load_playlist() {
+    let mut saved_playlist_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    saved_playlist_path.push("resources/test/playlist/saved_playlists");
+
+    let saved_playlist_path = saved_playlist_path.to_str().unwrap().to_string();
+    
+    {
+        let mut playlist = korama::Playlist::new(String::from("Test playlist"));
+
+        let example_tracks = get_example_tracks();
+
+        playlist.add_track(example_tracks[0].clone());
+        playlist.add_track(example_tracks[1].clone());
+        playlist.add_track(example_tracks[2].clone());
+        // Ensure we have the expected contents before we save
+        check_example_tracks_in_playlist(&mut playlist);
+        playlist.save(saved_playlist_path.clone());
+    }
+
+    let mut playlist = korama::Playlist::load(saved_playlist_path.clone(), String::from("Test playlist"));
+    playlist.reset_position();
+    check_example_tracks_in_playlist(&mut playlist);
+    remove_file(format!("{}/{}", &saved_playlist_path, String::from("Test playlist.playlist"))).unwrap();
+}
+
+#[test]
 fn step_through_playlist() {
     let mut playlist = korama::Playlist::new(String::from("Test playlist"));
 
@@ -38,29 +67,7 @@ fn step_through_playlist() {
     playlist.add_track(example_tracks[1].clone());
     playlist.add_track(example_tracks[2].clone());
 
-    let mut next_track = playlist.next();
-    match next_track {
-        Some(track) => assert!(track == &example_tracks[0], "Failed starting playlist- found {}.", track.track_name),
-        None => panic!("Failed starting playlist."),
-    };
-
-    next_track = playlist.next();
-    match next_track {
-        Some(track) => assert!(track == &example_tracks[1], "Failed stepping to second track- found {}.", track.track_name),
-        None => panic!("Failed stepping to second track."),
-    };
-
-    next_track = playlist.next();
-    match next_track {
-        Some(track) => assert!(track == &example_tracks[2], "Failed stepping to last track- found {}.", track.track_name),
-        None => panic!("Failed stepping to last track."),
-    };
-
-    next_track = playlist.next();
-    match next_track {
-        Some(track) => panic!("Failed finishing playlist- found {}.", track.track_name),
-        None => println!("Found expected end of playlist."),
-    };
+    check_example_tracks_in_playlist(&mut playlist);
 }
 
 #[test]
@@ -175,6 +182,34 @@ fn step_back_through_playlist() {
     match track {
         Some(track) => panic!("Found track where there should be none- found {}.", track.track_name),
         None => println!("Correctly found no track.."),
+    };
+}
+
+fn check_example_tracks_in_playlist(playlist: &mut korama::Playlist) {
+    let example_tracks = get_example_tracks();
+
+    let mut next_track = playlist.next();
+    match next_track {
+        Some(track) => assert!(track == &example_tracks[0], "Failed starting playlist- found {}.", track.track_name),
+        None => panic!("Failed starting playlist."),
+    };
+
+    next_track = playlist.next();
+    match next_track {
+        Some(track) => assert!(track == &example_tracks[1], "Failed stepping to second track- found {}.", track.track_name),
+        None => panic!("Failed stepping to second track."),
+    };
+
+    next_track = playlist.next();
+    match next_track {
+        Some(track) => assert!(track == &example_tracks[2], "Failed stepping to last track- found {}.", track.track_name),
+        None => panic!("Failed stepping to last track."),
+    };
+
+    next_track = playlist.next();
+    match next_track {
+        Some(track) => panic!("Failed finishing playlist- found {}.", track.track_name),
+        None => println!("Found expected end of playlist."),
     };
 }
 
