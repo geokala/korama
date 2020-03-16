@@ -37,14 +37,19 @@ impl Playlist {
 
         let tracks = Playlist::load_tracks(&saved_data);
 
-        let pos = match header_details[1].parse::<usize>() {
-            Ok(pos) => pos,
-            Err(err) => panic!("Could not parse playlist position in {}: {:#?}", playlist_path.display(), err),
+        let pos:Option<usize>;
+        if header_details[1].len() == 0 {
+            pos = None;
+        } else {
+            pos = match header_details[1].parse::<usize>() {
+                Ok(pos) => Some(pos),
+                Err(err) => panic!("Could not parse playlist position in {}: {:#?}", playlist_path.display(), err),
+            }
         };
 
         Playlist{
             name: header_details[0].to_string(),
-            pos: Some(pos),
+            pos: pos,
             tracks: tracks,
         }
     }
@@ -108,10 +113,15 @@ impl Saveable for Playlist {
     fn get_header(&self) -> String {
         let mut header = String::new();
 
+        let pos_string = match &self.pos {
+            Some(pos) => pos.to_string(),
+            None => String::from(""),
+        };
+
         // Generate header
         header.push_str(&self.name);
         header.push(END_OF_FIELD);
-        header.push_str(&self.pos.unwrap().to_string());
+        header.push_str(&pos_string);
         header.push(END_OF_HEADER);
 
         header
