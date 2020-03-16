@@ -58,6 +58,32 @@ fn test_save_and_load_playlist() {
 }
 
 #[test]
+fn test_save_and_load_not_started_playlist() {
+    let mut saved_playlist_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    saved_playlist_path.push("resources/test/playlist/saved_playlists");
+
+    let saved_playlist_path = saved_playlist_path.to_str().unwrap().to_string();
+    
+    {
+        let mut playlist = korama::Playlist::new(String::from("Test playlist ns"));
+
+        let example_tracks = get_example_tracks();
+
+        playlist.add_track(example_tracks[0].clone());
+        playlist.add_track(example_tracks[1].clone());
+        playlist.add_track(example_tracks[2].clone());
+
+        playlist.save(saved_playlist_path.clone());
+    }
+
+    let mut playlist = korama::Playlist::load(saved_playlist_path.clone(), String::from("Test playlist ns"));
+
+    check_example_tracks_in_playlist(&mut playlist);
+
+    remove_file(format!("{}/{}", &saved_playlist_path, String::from("Test playlist ns.playlist"))).unwrap();
+}
+
+#[test]
 fn reset_playlist() {
     let mut playlist = korama::Playlist::new(String::from("Test playlist"));
 
