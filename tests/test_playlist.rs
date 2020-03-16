@@ -58,6 +58,23 @@ fn test_save_and_load_playlist() {
 }
 
 #[test]
+fn reset_playlist() {
+    let mut playlist = korama::Playlist::new(String::from("Test playlist"));
+
+    let example_tracks = get_example_tracks();
+
+    playlist.add_track(example_tracks[0].clone());
+    playlist.add_track(example_tracks[1].clone());
+    playlist.add_track(example_tracks[2].clone());
+
+    check_example_tracks_in_playlist(&mut playlist);
+
+    playlist.reset_position();
+
+    check_example_tracks_in_playlist(&mut playlist);
+}
+
+#[test]
 fn step_through_playlist() {
     let mut playlist = korama::Playlist::new(String::from("Test playlist"));
 

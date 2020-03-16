@@ -1,6 +1,5 @@
 Make lib:
   Playlist:
-    - Add test for resetting playlist position.
     - Add test for saving+loading not yet started playlist (pos=None).
     - Support <DYNAMIC> tag in playlist- adds a new track at random from a specific music library or playlist. (trait)
 
