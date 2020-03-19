@@ -13,22 +13,72 @@ fn add_dynamic_source_playlist() {
     let dynamic_sources = dyn_playlist.get_dynamic_sources();
 
     assert_eq!(dynamic_sources.len(), 1);
-    assert!(dynamic_sources[0].get_name() == String::from("Test source playlist"));
+    assert_eq!(dynamic_sources[0], source_playlist);
 
     let track = dyn_playlist.next().unwrap();
 
-    let first = String::from("First track");
-    let second = String::from("Second track");
-    let third = String::from("Third track");
-
-    match track.track_name {
-        first => print!("Saw first track."),
-        second => print!("Saw second track."),
-        third => print!("Saw third track."),
-        _ => panic!("Saw unexpected track: {}", track.track_name),
-    };
+    assert!(get_playlist_titles().contains(&track.track_name));
 }
 
+#[test]
+fn add_dynamic_source_library() {
+    let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
+
+    let mut source_library = get_library_source();
+
+    dyn_playlist.add_dynamic_source(source_library);
+
+    let dynamic_sources = dyn_playlist.get_dynamic_sources();
+
+    assert_eq!(dynamic_sources.len(), 1);
+    assert_eq!(dynamic_sources[0], source_library);
+
+    let track = dyn_playlist.next().unwrap();
+
+    assert!(get_library_titles().contains(&track.track_name));
+}
+
+#[test]
+fn add_dynamic_source_library_and_playlist() {
+    let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
+
+    let mut source_playlist = get_playlist_source();
+    let mut source_library = get_library_source();
+
+    dyn_playlist.add_dynamic_source(source_library);
+    dyn_playlist.add_dynamic_source(source_playlist);
+
+    let dynamic_sources = dyn_playlist.get_dynamic_sources();
+
+    assert_eq!(dynamic_sources.len(), 1);
+    assert_eq!(dynamic_sources[0], source_library);
+
+    let track = dyn_playlist.next().unwrap();
+
+    let mut possible_names = get_playlist_titles();
+    possible_names.append(&mut get_library_titles());
+
+    assert!(possible_names.contains(&track.track_name));
+}
+
+fn get_playlist_titles() -> Vec<String> {
+    vec!(
+        String::from("First track"),
+        String::from("Second track"),
+        String::from("Third track"),
+    )
+}
+
+fn get_library_titles() -> Vec<String> {
+    vec!(
+        String::from("Falling over"),
+        String::from("First steps"),
+        String::from("Ignored"),
+        String::from("Not much to write home about"),
+        String::from("Scream into the mic"),
+        String::from("The Second Step"),
+    )
+}
 
 fn get_playlist_source() -> korama::Playlist {
     let example_track_1 = korama::Track {
@@ -64,7 +114,7 @@ fn get_playlist_source() -> korama::Playlist {
     playlist
 }
 
-fn set_up_test_library() -> korama::MusicLibrary {
+fn get_library_source() -> korama::MusicLibrary {
     let mut test_library_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     test_library_path.push("resources/test/library");
 
