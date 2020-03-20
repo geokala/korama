@@ -3,7 +3,7 @@ use std::ffi::OsStr;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
 use crate::delimiters::{END_OF_FIELD, END_OF_HEADER};
-use crate::shared::Saveable;
+use crate::shared::{DynamicSource, Saveable};
 use crate::track::Track;
 
 const EXTENSION: &str = "lib";
@@ -151,3 +151,5 @@ impl Saveable for MusicLibrary {
         header
     }
 }
+
+impl DynamicSource for MusicLibrary {}

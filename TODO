@@ -9,6 +9,7 @@ Make lib:
     - get next track: If no tracks remaining in playlist, get random track from random dynamic source (weighted by track length); if track in window, try again else add to window and drop end of window if too large
                       add new track to end of playlist.
                       If no success within 2*windowsize attempts, return next generated track
+    - save/load include dynamic sources
 
   Queue:
     - Support adding track to queue.

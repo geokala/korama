@@ -1,6 +1,7 @@
 use crate::delimiters::{END_OF_FIELD, END_OF_HEADER};
+//use crate::music_library::MusicLibrary;
 use crate::track::Track;
-use crate::shared::Saveable;
+use crate::shared::{DynamicSource, Saveable};
 use std::cmp::min;
 use std::ffi::OsStr;
 use std::fs::read_to_string;
@@ -12,6 +13,7 @@ const EXTENSION: &str = "playlist";
 pub struct Playlist {
     name: String,
     tracks: Vec<Track>,
+    dynamic_sources: Vec<dyn DynamicSource>,
     pos: Option<usize>,
 }
 
@@ -20,6 +22,7 @@ impl Playlist {
         Playlist{
             name,
             tracks: Vec::new(),
+            dynamic_sources: Vec::new(),
             pos: None,
         }
     }
@@ -51,6 +54,7 @@ impl Playlist {
             name: header_details[0].to_string(),
             pos: pos,
             tracks: tracks,
+            dynamic_sources: Vec::new(),
         }
     }
 
@@ -95,6 +99,14 @@ impl Playlist {
     pub fn get(&self, pos: usize) -> Option<&Track> {
         self.tracks.get(pos)
     }
+
+    pub fn add_dynamic_source(&mut self, source: impl DynamicSource) {
+        self.dynamic_sources.push(source);
+    }
+
+    pub fn get_dynamic_sources(&self) -> Vec<dyn DynamicSource> {
+        self.dynamic_sources.clone()
+    }
 }
 
 impl Saveable for Playlist {
@@ -127,3 +139,5 @@ impl Saveable for Playlist {
         header
     }
 }
+
+impl DynamicSource for Playlist {}

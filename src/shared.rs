@@ -5,6 +5,8 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 
+pub trait DynamicSource {}
+
 pub trait Saveable {
     fn save(&self, data_storage_path: String) {
         let mut data_path = PathBuf::from(data_storage_path);
