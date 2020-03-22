@@ -9,6 +9,7 @@ use crate::track::Track;
 const EXTENSION: &str = "lib";
 
 
+#[derive(Clone)]
 pub struct MusicLibrary {
     name: String,
     path: String,

@@ -1,5 +1,5 @@
 use crate::delimiters::{END_OF_FIELD, END_OF_HEADER};
-//use crate::music_library::MusicLibrary;
+use crate::music_library::MusicLibrary;
 use crate::track::Track;
 use crate::shared::{DynamicSource, Saveable};
 use std::cmp::min;
@@ -10,10 +10,12 @@ use std::path::PathBuf;
 const EXTENSION: &str = "playlist";
 
 
+#[derive(Clone)]
 pub struct Playlist {
     name: String,
     tracks: Vec<Track>,
-    dynamic_sources: Vec<dyn DynamicSource>,
+    dynamic_playlist_sources: Vec<Playlist>,
+    dynamic_library_sources: Vec<MusicLibrary>,
     pos: Option<usize>,
 }
 
@@ -22,7 +24,8 @@ impl Playlist {
         Playlist{
             name,
             tracks: Vec::new(),
-            dynamic_sources: Vec::new(),
+            dynamic_playlist_sources: Vec::new(),
+            dynamic_library_sources: Vec::new(),
             pos: None,
         }
     }
@@ -54,7 +57,8 @@ impl Playlist {
             name: header_details[0].to_string(),
             pos: pos,
             tracks: tracks,
-            dynamic_sources: Vec::new(),
+            dynamic_playlist_sources: Vec::new(),
+            dynamic_library_sources: Vec::new(),
         }
     }
 
@@ -100,12 +104,20 @@ impl Playlist {
         self.tracks.get(pos)
     }
 
-    pub fn add_dynamic_source(&mut self, source: impl DynamicSource) {
-        self.dynamic_sources.push(source);
+    pub fn add_dynamic_playlist_source(&mut self, source: Playlist) {
+        self.dynamic_playlist_sources.push(source.clone());
     }
 
-    pub fn get_dynamic_sources(&self) -> Vec<dyn DynamicSource> {
-        self.dynamic_sources.clone()
+    pub fn add_dynamic_library_source(&mut self, source: MusicLibrary) {
+        self.dynamic_library_sources.push(source.clone());
+    }
+
+    pub fn get_dynamic_playlist_sources(&self) -> Vec<Playlist> {
+        self.dynamic_playlist_sources.clone()
+    }
+
+    pub fn get_dynamic_library_sources(&self) -> Vec<MusicLibrary> {
+        self.dynamic_library_sources.clone()
     }
 }
 
