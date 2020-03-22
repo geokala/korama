@@ -1,19 +1,22 @@
 use std::path::PathBuf;
 use korama;
+use korama::Saveable;
 
 
 #[test]
 fn add_dynamic_source_playlist() {
     let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
 
-    let mut source_playlist = get_playlist_source();
+    let source_playlist = get_playlist_source();
 
-    dyn_playlist.add_dynamic_source(source_playlist);
+    dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
 
-    let dynamic_sources = dyn_playlist.get_dynamic_sources();
+    let dynamic_playlist_sources = dyn_playlist.get_dynamic_playlist_sources();
+    let dynamic_library_sources = dyn_playlist.get_dynamic_library_sources();
 
-    assert_eq!(dynamic_sources.len(), 1);
-    assert_eq!(dynamic_sources[0], source_playlist);
+    assert_eq!(dynamic_playlist_sources.len(), 1);
+    assert_eq!(dynamic_playlist_sources[0].get_name(), source_playlist.get_name());
+    assert_eq!(dynamic_library_sources.len(), 0);
 
     let track = dyn_playlist.next().unwrap();
 
@@ -24,14 +27,16 @@ fn add_dynamic_source_playlist() {
 fn add_dynamic_source_library() {
     let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
 
-    let mut source_library = get_library_source();
+    let source_library = get_library_source();
 
-    dyn_playlist.add_dynamic_source(source_library);
+    dyn_playlist.add_dynamic_library_source(source_library.clone());
 
-    let dynamic_sources = dyn_playlist.get_dynamic_sources();
+    let dynamic_playlist_sources = dyn_playlist.get_dynamic_playlist_sources();
+    let dynamic_library_sources = dyn_playlist.get_dynamic_library_sources();
 
-    assert_eq!(dynamic_sources.len(), 1);
-    assert_eq!(dynamic_sources[0], source_library);
+    assert_eq!(dynamic_playlist_sources.len(), 0);
+    assert_eq!(dynamic_library_sources.len(), 1);
+    assert_eq!(dynamic_library_sources[0].get_name(), source_library.get_name());
 
     let track = dyn_playlist.next().unwrap();
 
@@ -42,16 +47,19 @@ fn add_dynamic_source_library() {
 fn add_dynamic_source_library_and_playlist() {
     let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
 
-    let mut source_playlist = get_playlist_source();
-    let mut source_library = get_library_source();
+    let source_playlist = get_playlist_source();
+    let source_library = get_library_source();
 
-    dyn_playlist.add_dynamic_source(source_library);
-    dyn_playlist.add_dynamic_source(source_playlist);
+    dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
+    dyn_playlist.add_dynamic_library_source(source_library.clone());
 
-    let dynamic_sources = dyn_playlist.get_dynamic_sources();
+    let dynamic_playlist_sources = dyn_playlist.get_dynamic_playlist_sources();
+    let dynamic_library_sources = dyn_playlist.get_dynamic_library_sources();
 
-    assert_eq!(dynamic_sources.len(), 1);
-    assert_eq!(dynamic_sources[0], source_library);
+    assert_eq!(dynamic_playlist_sources.len(), 1);
+    assert_eq!(dynamic_playlist_sources[0].get_name(), source_playlist.get_name());
+    assert_eq!(dynamic_library_sources.len(), 1);
+    assert_eq!(dynamic_library_sources[0].get_name(), source_library.get_name());
 
     let track = dyn_playlist.next().unwrap();
 
