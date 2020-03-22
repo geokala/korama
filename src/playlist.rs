@@ -2,6 +2,7 @@ use crate::delimiters::{END_OF_FIELD, END_OF_HEADER};
 use crate::music_library::MusicLibrary;
 use crate::track::Track;
 use crate::shared::{DynamicSource, Saveable};
+use rand::Rng;
 use std::cmp::min;
 use std::ffi::OsStr;
 use std::fs::read_to_string;
@@ -80,7 +81,39 @@ impl Playlist {
             None => self.pos = Some(0),
         };
 
-        self.tracks.get(self.pos.unwrap())
+        let result = self.tracks.get(self.pos.unwrap());
+
+        match result {
+            None => {
+                let mut dyn_weight = 0;
+                for source in self.dynamic_playlist_sources {
+                    dyn_weight += source.get_weight()
+                };
+                for source in self.dynamic_library_sources {
+                    dyn_weight += source.get_weight()
+                };
+                if dyn_weight > 0 {
+                    let next_track;
+                    let mut rand_result = None;
+                    let mut dyn_source_num = rand::thread_rng().gen_range(1, dyn_weight);
+                    for source in self.dynamic_playlist_sources {
+                        let source_weight = source.get_weight();
+                        if dyn_source_num <= source_weight {
+                            next_track = source.get_random_track();
+                            self.add_track(next_track.clone());
+                            rand_result = Some(&next_track.clone());
+                            break;
+                        } else {
+                            dyn_source_num -= source_weight;
+                        };
+                    };
+                    rand_result
+                } else {
+                    result
+                }
+            },
+            _ => result,
+        }
     }
 
     pub fn prev(&mut self) -> Option<&Track> {
@@ -152,4 +185,8 @@ impl Saveable for Playlist {
     }
 }
 
-impl DynamicSource for Playlist {}
+impl DynamicSource for Playlist {
+    fn get_tracks(&self) -> Vec<Track> {
+        self.tracks.clone()
+    }
+}

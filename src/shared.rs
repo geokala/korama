@@ -1,11 +1,26 @@
 use crate::delimiters::{END_OF_FIELD, END_OF_HEADER, END_OF_RECORD};
 use crate::track::Track;
+use rand::Rng;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 
-pub trait DynamicSource {}
+pub trait DynamicSource {
+    fn get_random_track(&self) -> Track {
+        let tracks = &self.get_tracks();
+
+        let track_num = rand::thread_rng().gen_range(0, tracks.len());
+
+        tracks[track_num].clone()
+    }
+
+    fn get_weight(&self) -> usize {
+        self.get_tracks().len()
+    }
+
+    fn get_tracks(&self) -> Vec<Track>;
+}
 
 pub trait Saveable {
     fn save(&self, data_storage_path: String) {

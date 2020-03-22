@@ -153,4 +153,8 @@ impl Saveable for MusicLibrary {
     }
 }
 
-impl DynamicSource for MusicLibrary {}
+impl DynamicSource for MusicLibrary {
+    fn get_tracks(&self) -> Vec<Track> {
+        self.tracks.clone()
+    }
+}
