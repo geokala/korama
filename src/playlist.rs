@@ -83,36 +83,10 @@ impl Playlist {
 
         let result = self.tracks.get(self.pos.unwrap());
 
-        match result {
-            None => {
-                let mut dyn_weight = 0;
-                for source in self.dynamic_playlist_sources {
-                    dyn_weight += source.get_weight()
-                };
-                for source in self.dynamic_library_sources {
-                    dyn_weight += source.get_weight()
-                };
-                if dyn_weight > 0 {
-                    let next_track;
-                    let mut rand_result = None;
-                    let mut dyn_source_num = rand::thread_rng().gen_range(1, dyn_weight);
-                    for source in self.dynamic_playlist_sources {
-                        let source_weight = source.get_weight();
-                        if dyn_source_num <= source_weight {
-                            next_track = source.get_random_track();
-                            self.add_track(next_track.clone());
-                            rand_result = Some(&next_track.clone());
-                            break;
-                        } else {
-                            dyn_source_num -= source_weight;
-                        };
-                    };
-                    rand_result
-                } else {
-                    result
-                }
-            },
-            _ => result,
+        if result == None {
+            self.get_random_track()
+        } else {
+            result
         }
     }
 
@@ -131,6 +105,35 @@ impl Playlist {
             None => (),
         };
         result
+    }
+
+    fn get_random_track(&mut self) -> Option<&Track> {
+        let mut dyn_weight = 0;
+        for source in self.dynamic_playlist_sources.clone() {
+            dyn_weight += source.get_weight()
+        };
+        for source in self.dynamic_library_sources.clone() {
+            dyn_weight += source.get_weight()
+        };
+        if dyn_weight > 0 {
+            let next_track;
+            let mut rand_result = None;
+            let mut dyn_source_num = rand::thread_rng().gen_range(1, dyn_weight);
+            for source in self.dynamic_playlist_sources.clone() {
+                let source_weight = source.get_weight();
+                if dyn_source_num <= source_weight {
+                    next_track = source.get_random_track();
+                    self.add_track(next_track.clone());
+                    rand_result = Some(&next_track.clone());
+                    break;
+                } else {
+                    dyn_source_num -= source_weight;
+                };
+            };
+            rand_result
+        } else {
+            None
+        }
     }
 
     pub fn get(&self, pos: usize) -> Option<&Track> {
