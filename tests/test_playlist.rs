@@ -130,19 +130,19 @@ fn step_back_through_playlist() {
 
     let mut prev_track = playlist.prev();
     match prev_track {
-        Some(track) => assert!(track == &example_tracks[2], "Failed first step back- found {}.", track.track_name),
+        Some(track) => assert!(track == example_tracks[2], "Failed first step back- found {}.", track.track_name),
         None => panic!("Failed first step back- found nothing."),
     };
 
     prev_track = playlist.prev();
     match prev_track {
-        Some(track) => assert!(track == &example_tracks[1], "Failed second step back- found {}.", track.track_name),
+        Some(track) => assert!(track == example_tracks[1], "Failed second step back- found {}.", track.track_name),
         None => panic!("Failed second step back- found nothing."),
     };
 
     prev_track = playlist.prev();
     match prev_track {
-        Some(track) => assert!(track == &example_tracks[0], "Failed third step back- found {}.", track.track_name),
+        Some(track) => assert!(track == example_tracks[0], "Failed third step back- found {}.", track.track_name),
         None => panic!("Failed third step back- found nothing."),
     };
 
@@ -170,7 +170,7 @@ fn step_back_through_playlist() {
 
     let prev_track = playlist.prev();
     match prev_track {
-        Some(track) => assert!(track == &example_tracks[2], "Found unexpected track stepping back- found {}.", track.track_name),
+        Some(track) => assert!(track == example_tracks[2], "Found unexpected track stepping back- found {}.", track.track_name),
         None => panic!("Playlist position ended somewhere unexpected."),
     };
 }
@@ -189,7 +189,7 @@ fn step_back_through_playlist() {
 
     let next_track = playlist.next();
     match next_track {
-        Some(track) => assert!(track == &example_tracks[0], "Found unexpected track stepping forward- found {}.", track.track_name),
+        Some(track) => assert!(track == example_tracks[0], "Found unexpected track stepping forward- found {}.", track.track_name),
         None => panic!("Playlist position ended somewhere unexpected."),
     };
 }
@@ -205,19 +205,19 @@ fn step_back_through_playlist() {
 
     let mut track = playlist.get(0);
     match track {
-        Some(track) => assert!(track == &example_tracks[0], "Failed getting first track- found {}.", track.track_name),
+        Some(track) => assert!(*track == example_tracks[0], "Failed getting first track- found {}.", track.track_name),
         None => panic!("Failed getting first track."),
     };
 
     track = playlist.get(1);
     match track {
-        Some(track) => assert!(track == &example_tracks[1], "Failed getting second track- found {}.", track.track_name),
+        Some(track) => assert!(*track == example_tracks[1], "Failed getting second track- found {}.", track.track_name),
         None => panic!("Failed getting second track."),
     };
 
     track = playlist.get(2);
     match track {
-        Some(track) => assert!(track == &example_tracks[2], "Failed getting last track- found {}.", track.track_name),
+        Some(track) => assert!(*track == example_tracks[2], "Failed getting last track- found {}.", track.track_name),
         None => panic!("Failed getting last track."),
     };
 
@@ -233,19 +233,19 @@ fn check_example_tracks_in_playlist(playlist: &mut korama::Playlist) {
 
     let mut next_track = playlist.next();
     match next_track {
-        Some(track) => assert!(track == &example_tracks[0], "Failed starting playlist- found {}.", track.track_name),
+        Some(track) => assert!(track == example_tracks[0], "Failed starting playlist- found {}.", track.track_name),
         None => panic!("Failed starting playlist."),
     };
 
     next_track = playlist.next();
     match next_track {
-        Some(track) => assert!(track == &example_tracks[1], "Failed stepping to second track- found {}.", track.track_name),
+        Some(track) => assert!(track == example_tracks[1], "Failed stepping to second track- found {}.", track.track_name),
         None => panic!("Failed stepping to second track."),
     };
 
     next_track = playlist.next();
     match next_track {
-        Some(track) => assert!(track == &example_tracks[2], "Failed stepping to last track- found {}.", track.track_name),
+        Some(track) => assert!(track == example_tracks[2], "Failed stepping to last track- found {}.", track.track_name),
         None => panic!("Failed stepping to last track."),
     };
 

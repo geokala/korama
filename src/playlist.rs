@@ -75,23 +75,24 @@ impl Playlist {
         &self.tracks.remove(index);
     }
 
-    pub fn next(&mut self) -> Option<&Track> {
+    pub fn next(&mut self) -> Option<Track> {
         match self.pos {
             Some(pos) => self.pos = Some(min(pos + 1, self.tracks.len())),
             None => self.pos = Some(0),
         };
 
         if self.pos.unwrap() >= self.tracks.len() {
-            self.tracks.get(self.pos.unwrap())
-        } else {
-            match self.get_random_next_track() {
-                Some(track) => Some(&track),
+            let result = self.tracks.get(self.pos.unwrap());
+            match result {
+                Some(track_ref) => Some(track_ref.clone()),
                 None => None,
             }
+        } else {
+            self.get_random_next_track()
         }
     }
 
-    pub fn prev(&mut self) -> Option<&Track> {
+    pub fn prev(&mut self) -> Option<Track> {
         let mut result = None;
         match self.pos {
             Some(pos) => {
@@ -105,7 +106,10 @@ impl Playlist {
             }
             None => (),
         };
-        result
+        match result {
+            Some(track_ref) => Some(track_ref.clone()),
+            None => None,
+        }
     }
 
     fn get_random_next_track(&mut self) -> Option<Track> {
@@ -128,7 +132,7 @@ impl Playlist {
                 };
             };
             match self.tracks.get(self.tracks.len() - 1) {
-                Some(track) => Some(*track),
+                Some(track) => Some(track.clone()),
                 None => None,
             }
         } else {
