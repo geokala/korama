@@ -119,9 +119,21 @@ impl Playlist {
                 let source_weight = source.get_weight();
                 if dyn_source_num <= source_weight {
                     self.add_track(source.get_random_track());
+                    dyn_weight = 0;
                     break;
                 } else {
                     dyn_source_num -= source_weight;
+                };
+            };
+            if dyn_weight > 0 {
+                for source in self.dynamic_library_sources.clone() {
+                    let source_weight = source.get_weight();
+                    if dyn_source_num <= source_weight {
+                        self.add_track(source.get_random_track());
+                        break;
+                    } else {
+                        dyn_source_num -= source_weight;
+                    };
                 };
             };
             self.tracks.get(self.tracks.len() -1)

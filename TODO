@@ -1,12 +1,10 @@
 Make lib:
   Playlist:
-    - Support <DYNAMIC> tag in playlist- adds a new track at random from a specific music library or playlist. (trait)
     - Window size:
       - half of total available tracks, round down
       - min 1
       - max 20
-    - add_dynamic_source: Adjusts window_size as well as adding source (must have get_random_track Trait)
-    - get next track: If no tracks remaining in playlist, get random track from random dynamic source (weighted by track length); if track in window, try again else add to window and drop end of window if too large
+    - get next track: Handle window
                       add new track to end of playlist.
                       If no success within 2*windowsize attempts, return next generated track
     - save/load include dynamic sources
