@@ -84,10 +84,7 @@ impl Playlist {
         if self.pos.unwrap() >= self.tracks.len() {
             self.tracks.get(self.pos.unwrap())
         } else {
-            match self.get_random_next_track() {
-                Some(track) => Some(&track),
-                None => None,
-            }
+            self.get_random_next_track()
         }
     }
 
@@ -108,7 +105,7 @@ impl Playlist {
         result
     }
 
-    fn get_random_next_track(&mut self) -> Option<Track> {
+    fn get_random_next_track(&mut self) -> Option<&Track> {
         let mut dyn_weight = 0;
         for source in self.dynamic_playlist_sources.clone() {
             dyn_weight += source.get_weight()
@@ -127,10 +124,7 @@ impl Playlist {
                     dyn_source_num -= source_weight;
                 };
             };
-            match self.tracks.get(self.tracks.len() - 1) {
-                Some(track) => Some(*track),
-                None => None,
-            }
+            self.tracks.get(self.tracks.len() -1)
         } else {
             None
         }
