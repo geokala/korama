@@ -81,7 +81,7 @@ impl Playlist {
             None => self.pos = Some(0),
         };
 
-        if self.pos.unwrap() >= self.tracks.len() {
+        if self.pos.unwrap() < self.tracks.len() {
             self.tracks.get(self.pos.unwrap())
         } else {
             self.get_random_next_track()
