@@ -15,6 +15,7 @@ const EXTENSION: &str = "playlist";
 pub struct Playlist {
     name: String,
     tracks: Vec<Track>,
+    window: Vec<Track>,
     dynamic_playlist_sources: Vec<Playlist>,
     dynamic_library_sources: Vec<MusicLibrary>,
     pos: Option<usize>,
@@ -25,6 +26,7 @@ impl Playlist {
         Playlist{
             name,
             tracks: Vec::new(),
+            window: Vec::new(),
             dynamic_playlist_sources: Vec::new(),
             dynamic_library_sources: Vec::new(),
             pos: None,
@@ -58,6 +60,7 @@ impl Playlist {
             name: header_details[0].to_string(),
             pos: pos,
             tracks: tracks,
+            window: Vec::new(),
             dynamic_playlist_sources: Vec::new(),
             dynamic_library_sources: Vec::new(),
         }
@@ -84,7 +87,27 @@ impl Playlist {
         if self.pos.unwrap() < self.tracks.len() {
             self.tracks.get(self.pos.unwrap())
         } else {
-            self.get_random_next_track()
+            let mut next_track:Option<&Track> = None;
+            let window_size = self.get_window_size();
+            while next_track == None {
+                next_track = self.get_random_next_track();
+                match next_track {
+                    Some(track) => {
+                        if self.window.contains(track) {
+                            next_track = None;
+                        } else {
+                            self.window.push(track.clone());
+                            if self.window.len() > window_size {
+                                self.window.pop();
+                            };
+                        };
+                    },
+                    // If we receive None then for some reason we can't get a
+                    // next track, so return it.
+                    None => break,
+                };
+            };
+            next_track
         }
     }
 
@@ -103,6 +126,32 @@ impl Playlist {
             None => (),
         };
         result
+    }
+
+    fn get_window_size(&self) -> usize {
+        let mut window_size = 0;
+        for source in self.dynamic_playlist_sources.clone() {
+            window_size += source.get_weight()
+        };
+        for source in self.dynamic_library_sources.clone() {
+            window_size += source.get_weight()
+        };
+
+        // Effectively this is rounding up the division
+        window_size += 1;
+        window_size = window_size / 2;
+
+        // Make the default window size just less than half of a smaller source set
+        // Otherwise, with e.g. 3 tracks we will always play them in an order that is
+        // determined randomly one.
+        window_size -= 1;
+
+        // Arbitrary max window size
+        if window_size > 30 {
+            window_size = 30;
+        };
+
+        window_size
     }
 
     fn get_random_next_track(&mut self) -> Option<&Track> {
