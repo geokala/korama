@@ -70,16 +70,16 @@ fn add_dynamic_source_library_and_playlist() {
 }
 
 #[test]
-fn test_dynamic_window_small() {
+fn test_dynamic_window_tiny() {
     let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
 
-    let source_playlist = get_playlist_source();
+    let source_library = get_library_source();
 
-    dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
+    dyn_playlist.add_dynamic_library_source(source_library.clone());
 
     // Generate some tracks
     let mut titles = Vec::new();
-    for _ in 1..1000 {
+    for _ in 1..5000 {
         let track = dyn_playlist.next().unwrap();
         titles.push(track.track_name.clone());
     };
@@ -108,7 +108,119 @@ fn test_dynamic_window_small() {
             assert!(index - prev_index > 1);
             prev_index = index;
         };
-    }
+    };
+}
+
+#[test]
+fn test_dynamic_window_small() {
+    let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
+
+    let source_playlist = get_playlist_source();
+
+    dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
+
+    // Generate some tracks
+    let mut titles = Vec::new();
+    for _ in 1..5000 {
+        let track = dyn_playlist.next().unwrap();
+        titles.push(track.track_name.clone());
+    };
+
+    for title in get_library_titles() {
+        let mut indices = Vec::new();
+
+        for (i, dyn_title) in titles.iter().enumerate() {
+            if dyn_title == &title {
+                indices.push(i);
+            };
+        };
+
+        let mut prev_index;
+        if indices.len() > 0 {
+            prev_index = indices.remove(0);
+        } else {
+            break;
+        };
+        for index in indices {
+            // We expect the dynamic window to have a size of at least the sum of
+            // the dynamic source lengths / 2, rounded up, -1
+            // e.g. 3 or 4 tracks in all dynamic sources -> window size 1
+            // e.g. 15 or 16 tracks in all dynamic sources -> window size 7
+            // A maximum window size would be nice to have but horrible to test
+            assert!(index - prev_index > 2);
+            prev_index = index;
+        };
+    };
+}
+
+#[test]
+fn test_dynamic_window_smallish() {
+    let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
+
+    let source_playlist = get_playlist_source();
+    let source_library = get_library_source();
+
+    dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
+    dyn_playlist.add_dynamic_library_source(source_library.clone());
+
+    // Generate some tracks
+    let mut titles = Vec::new();
+    for _ in 1..5000 {
+        let track = dyn_playlist.next().unwrap();
+        titles.push(track.track_name.clone());
+    };
+
+    for title in get_library_titles() {
+        let mut indices = Vec::new();
+
+        for (i, dyn_title) in titles.iter().enumerate() {
+            if dyn_title == &title {
+                indices.push(i);
+            };
+        };
+
+        let mut prev_index;
+        if indices.len() > 0 {
+            prev_index = indices.remove(0);
+        } else {
+            break;
+        };
+        for index in indices {
+            // We expect the dynamic window to have a size of at least the sum of
+            // the dynamic source lengths / 2, rounded up, -1
+            // e.g. 3 or 4 tracks in all dynamic sources -> window size 1
+            // e.g. 15 or 16 tracks in all dynamic sources -> window size 7
+            // A maximum window size would be nice to have but horrible to test
+            assert!(index - prev_index > 4);
+            prev_index = index;
+        };
+    };
+
+    for title in get_playlist_titles() {
+        let mut indices = Vec::new();
+
+        for (i, dyn_title) in titles.iter().enumerate() {
+            if dyn_title == &title {
+                indices.push(i);
+            };
+        };
+
+        let mut prev_index;
+        if indices.len() > 0 {
+            prev_index = indices.remove(0);
+        } else {
+            break;
+        };
+        for index in indices {
+            // We expect the dynamic window to have a size of at least the sum of
+            // the dynamic source lengths / 2, rounded up, -1
+            // e.g. 3 or 4 tracks in all dynamic sources -> window size 1
+            // e.g. 15 or 16 tracks in all dynamic sources -> window size 7
+            // A maximum window size would be nice to have but horrible to test
+            assert!(index - prev_index > 4);
+            prev_index = index;
+        };
+    };
 }
 
 fn get_playlist_titles() -> Vec<String> {
