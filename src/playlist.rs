@@ -88,11 +88,12 @@ impl Playlist {
             self.tracks.get(self.pos.unwrap())
         } else {
             let mut next_track:Option<&Track> = None;
+            let window = self.window.clone();
             while next_track == None {
                 next_track = self.get_random_next_track();
                 match next_track {
                     Some(track) => {
-                        if self.window.contains(track) {
+                        if window.contains(track) {
                             next_track = None;
                         } else {
                             self.add_to_window(track.clone());
