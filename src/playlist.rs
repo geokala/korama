@@ -95,8 +95,6 @@ impl Playlist {
                     Some(track) => {
                         if window.contains(track) {
                             next_track = None;
-                        } else {
-                            self.add_to_window(track.clone());
                         };
                     },
                     // If we receive None then for some reason we can't get a
@@ -104,7 +102,14 @@ impl Playlist {
                     None => break,
                 };
             };
-            next_track
+            match next_track {
+                Some(track) => {
+                    self.add_to_window(track.clone());
+                    self.add_track(track.clone());
+                    self.tracks.get(self.tracks.len() -1)
+                },
+                None => None,
+            }
         }
     }
 
