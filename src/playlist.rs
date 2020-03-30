@@ -87,13 +87,13 @@ impl Playlist {
         if self.pos.unwrap() < self.tracks.len() {
             self.tracks.get(self.pos.unwrap())
         } else {
-            let mut next_track:Option<&Track> = None;
+            let mut next_track:Option<Track> = None;
             let window = self.window.clone();
             while next_track == None {
                 next_track = self.get_random_next_track();
-                match next_track {
+                match &next_track {
                     Some(track) => {
-                        if window.contains(track) {
+                        if window.contains(&track) {
                             next_track = None;
                         };
                     },
@@ -163,7 +163,8 @@ impl Playlist {
         window_size
     }
 
-    fn get_random_next_track(&mut self) -> Option<&Track> {
+    fn get_random_next_track(&self) -> Option<Track> {
+        let mut next_track = Vec::new();
         let mut dyn_weight = 0;
         for source in self.dynamic_playlist_sources.clone() {
             dyn_weight += source.get_weight()
@@ -176,7 +177,7 @@ impl Playlist {
             for source in self.dynamic_playlist_sources.clone() {
                 let source_weight = source.get_weight();
                 if dyn_source_num <= source_weight {
-                    self.add_track(source.get_random_track());
+                    next_track.push(source.get_random_track());
                     dyn_weight = 0;
                     break;
                 } else {
@@ -187,14 +188,17 @@ impl Playlist {
                 for source in self.dynamic_library_sources.clone() {
                     let source_weight = source.get_weight();
                     if dyn_source_num <= source_weight {
-                        self.add_track(source.get_random_track());
+                        next_track.push(source.get_random_track());
                         break;
                     } else {
                         dyn_source_num -= source_weight;
                     };
                 };
             };
-            self.tracks.get(self.tracks.len() -1)
+            match next_track.get(0) {
+                Some(track) => Some(track.clone()),
+                None => None,
+            }
         } else {
             None
         }
