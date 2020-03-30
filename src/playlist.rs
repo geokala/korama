@@ -88,7 +88,6 @@ impl Playlist {
             self.tracks.get(self.pos.unwrap())
         } else {
             let mut next_track:Option<&Track> = None;
-            let window_size = self.get_window_size();
             while next_track == None {
                 next_track = self.get_random_next_track();
                 match next_track {
@@ -96,10 +95,7 @@ impl Playlist {
                         if self.window.contains(track) {
                             next_track = None;
                         } else {
-                            self.window.push(track.clone());
-                            if self.window.len() > window_size {
-                                self.window.pop();
-                            };
+                            self.add_to_window(track.clone());
                         };
                     },
                     // If we receive None then for some reason we can't get a
@@ -126,6 +122,13 @@ impl Playlist {
             None => (),
         };
         result
+    }
+
+    fn add_to_window(&mut self, track: Track) {
+        self.window.push(track.clone());
+        if self.window.len() > self.get_window_size() {
+            self.window.pop();
+        };
     }
 
     fn get_window_size(&self) -> usize {
