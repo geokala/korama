@@ -1,12 +1,5 @@
 Make lib:
   Playlist:
-    - Window size:
-      - half of total available tracks, round down
-      - min 1
-      - max 20
-    - get next track: Handle window
-                      add new track to end of playlist.
-                      If no success within 2*windowsize attempts, return next generated track
     - save/load include dynamic sources
 
   Queue:
