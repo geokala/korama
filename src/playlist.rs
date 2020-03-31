@@ -133,7 +133,7 @@ impl Playlist {
     fn add_to_window(&mut self, track: Track) {
         self.window.push(track.clone());
         if self.window.len() > self.get_window_size() {
-            self.window.pop();
+            self.window.remove(0);
         };
     }
 
