@@ -20,7 +20,7 @@ fn add_dynamic_source_playlist() {
 
     let track = dyn_playlist.next().unwrap();
 
-    assert!(get_playlist_titles().contains(&track.track_name));
+    assert!(get_playlist_paths().contains(&track.path));
 }
 
 #[test]
@@ -40,7 +40,7 @@ fn add_dynamic_source_library() {
 
     let track = dyn_playlist.next().unwrap();
 
-    assert!(get_library_titles().contains(&track.track_name));
+    assert!(get_library_paths().contains(&track.path));
 }
 
 #[test]
@@ -63,10 +63,10 @@ fn add_dynamic_source_library_and_playlist() {
 
     let track = dyn_playlist.next().unwrap();
 
-    let mut possible_names = get_playlist_titles();
-    possible_names.append(&mut get_library_titles());
+    let mut possible_names = get_playlist_paths();
+    possible_names.append(&mut get_library_paths());
 
-    assert!(possible_names.contains(&track.track_name));
+    assert!(possible_names.contains(&track.path));
 }
 
 #[test]
@@ -78,17 +78,17 @@ fn test_dynamic_window_tiny() {
     dyn_playlist.add_dynamic_library_source(source_library.clone());
 
     // Generate some tracks
-    let mut titles = Vec::new();
-    for _ in 1..5000 {
+    let mut paths = Vec::new();
+    for _ in 1..500 {
         let track = dyn_playlist.next().unwrap();
-        titles.push(track.track_name.clone());
+        paths.push(track.path.clone());
     };
 
-    for title in get_playlist_titles() {
+    for path in get_playlist_paths() {
         let mut indices = Vec::new();
 
-        for (i, dyn_title) in titles.iter().enumerate() {
-            if dyn_title == &title {
+        for (i, dyn_path) in paths.iter().enumerate() {
+            if dyn_path == &path {
                 indices.push(i);
             };
         };
@@ -120,17 +120,17 @@ fn test_dynamic_window_small() {
     dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
 
     // Generate some tracks
-    let mut titles = Vec::new();
-    for _ in 1..5000 {
+    let mut paths = Vec::new();
+    for _ in 1..500 {
         let track = dyn_playlist.next().unwrap();
-        titles.push(track.track_name.clone());
+        paths.push(track.path.clone());
     };
 
-    for title in get_library_titles() {
+    for path in get_library_paths() {
         let mut indices = Vec::new();
 
-        for (i, dyn_title) in titles.iter().enumerate() {
-            if dyn_title == &title {
+        for (i, dyn_path) in paths.iter().enumerate() {
+            if dyn_path == &path {
                 indices.push(i);
             };
         };
@@ -164,17 +164,17 @@ fn test_dynamic_window_smallish() {
     dyn_playlist.add_dynamic_library_source(source_library.clone());
 
     // Generate some tracks
-    let mut titles = Vec::new();
-    for _ in 1..5000 {
+    let mut paths = Vec::new();
+    for _ in 1..500 {
         let track = dyn_playlist.next().unwrap();
-        titles.push(track.track_name.clone());
+        paths.push(track.path.clone());
     };
 
-    for title in get_library_titles() {
+    for path in get_library_paths() {
         let mut indices = Vec::new();
 
-        for (i, dyn_title) in titles.iter().enumerate() {
-            if dyn_title == &title {
+        for (i, dyn_path) in paths.iter().enumerate() {
+            if dyn_path == &path {
                 indices.push(i);
             };
         };
@@ -196,11 +196,11 @@ fn test_dynamic_window_smallish() {
         };
     };
 
-    for title in get_playlist_titles() {
+    for path in get_playlist_paths() {
         let mut indices = Vec::new();
 
-        for (i, dyn_title) in titles.iter().enumerate() {
-            if dyn_title == &title {
+        for (i, dyn_path) in paths.iter().enumerate() {
+            if dyn_path == &path {
                 indices.push(i);
             };
         };
@@ -223,23 +223,31 @@ fn test_dynamic_window_smallish() {
     };
 }
 
-fn get_playlist_titles() -> Vec<String> {
+fn get_playlist_paths() -> Vec<String> {
     vec!(
-        String::from("First track"),
-        String::from("Second track"),
-        String::from("Third track"),
+        String::from("/some/path"),
+        String::from("/some/other/path"),
+        String::from("/some/other/path/again"),
     )
 }
 
-fn get_library_titles() -> Vec<String> {
+fn get_library_paths() -> Vec<String> {
     vec!(
-        String::from("Falling over"),
-        String::from("First steps"),
-        String::from("Ignored"),
-        String::from("Not much to write home about"),
-        String::from("Scream into the mic"),
-        String::from("The Second Step"),
+        get_full_track_path(String::from("artist2/live_cover.mp3")),
+        get_full_track_path(String::from("artist2/album/ignored.mp3")),
+        get_full_track_path(String::from("another_artist/good_album/first_track.mp3")),
+        get_full_track_path(String::from("another_artist/good_album/another_track.mp3")),
+        get_full_track_path(String::from("another_artist/good_album/hidden_track.mp3")),
+        get_full_track_path(String::from("ignored.mp3")),
+        get_full_track_path(String::from("artist1/test.mp3")),
     )
+}
+
+fn get_full_track_path(rel_path: String) -> String {
+    let mut file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    file_path.push("resources/test/library");
+    file_path.push(rel_path);
+    file_path.to_str().unwrap().to_string()
 }
 
 fn get_playlist_source() -> korama::Playlist {
