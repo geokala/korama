@@ -53,20 +53,34 @@ fn add_dynamic_source_library_and_playlist() {
     dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
     dyn_playlist.add_dynamic_library_source(source_library.clone());
 
-    let dynamic_playlist_sources = dyn_playlist.get_dynamic_playlist_sources();
-    let dynamic_library_sources = dyn_playlist.get_dynamic_library_sources();
+    check_dyn_playlist_with_both_sources(dyn_playlist, source_playlist, source_library);
+}
 
-    assert_eq!(dynamic_playlist_sources.len(), 1);
-    assert_eq!(dynamic_playlist_sources[0].get_name(), source_playlist.get_name());
-    assert_eq!(dynamic_library_sources.len(), 1);
-    assert_eq!(dynamic_library_sources[0].get_name(), source_library.get_name());
+#[test]
+fn load_dynamic_playlist() {
+    let mut saved_playlist_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    saved_playlist_path.push("resources/test/playlist/saved_playlists");
 
-    let track = dyn_playlist.next().unwrap();
+    let saved_playlist_path = saved_playlist_path.to_str().unwrap().to_string();
 
-    let mut possible_names = get_playlist_paths();
-    possible_names.append(&mut get_library_paths());
+    let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
 
-    assert!(possible_names.contains(&track.path));
+    let source_playlist = get_playlist_source();
+    let source_library = get_library_source();
+
+    dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
+    dyn_playlist.add_dynamic_library_source(source_library.clone());
+
+    dyn_playlist.save(saved_playlist_path.clone())
+
+    let reloaded_playlist = korama::Playlist::load(
+        saved_playlist_path.clone(),
+        String::from("Test dynamic playlist"),
+        vec!(source_playlist.clone()),
+        vec!(source_library.clone()),
+    );
+
+    check_dyn_playlist_with_both_sources(reloaded_playlist, source_playlist, source_library);
 }
 
 #[test]
@@ -296,4 +310,23 @@ fn get_library_source() -> korama::MusicLibrary {
     library.scan();
 
     library
+}
+
+fn check_dyn_playlist_with_both_sources(mut dyn_playlist: korama::Playlist,
+                                        source_playlist: korama::Playlist,
+                                        source_library: korama::MusicLibrary) {
+    let dynamic_playlist_sources = dyn_playlist.get_dynamic_playlist_sources();
+    let dynamic_library_sources = dyn_playlist.get_dynamic_library_sources();
+
+    assert_eq!(dynamic_playlist_sources.len(), 1);
+    assert_eq!(dynamic_playlist_sources[0].get_name(), source_playlist.get_name());
+    assert_eq!(dynamic_library_sources.len(), 1);
+    assert_eq!(dynamic_library_sources[0].get_name(), source_library.get_name());
+
+    let track = dyn_playlist.next().unwrap();
+
+    let mut possible_names = get_playlist_paths();
+    possible_names.append(&mut get_library_paths());
+
+    assert!(possible_names.contains(&track.path));
 }
