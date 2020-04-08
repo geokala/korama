@@ -57,33 +57,6 @@ fn add_dynamic_source_library_and_playlist() {
 }
 
 #[test]
-fn load_dynamic_playlist() {
-    let mut saved_playlist_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    saved_playlist_path.push("resources/test/playlist/saved_playlists");
-
-    let saved_playlist_path = saved_playlist_path.to_str().unwrap().to_string();
-
-    let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
-
-    let source_playlist = get_playlist_source();
-    let source_library = get_library_source();
-
-    dyn_playlist.add_dynamic_playlist_source(source_playlist.clone());
-    dyn_playlist.add_dynamic_library_source(source_library.clone());
-
-    dyn_playlist.save(saved_playlist_path.clone())
-
-    let reloaded_playlist = korama::Playlist::load(
-        saved_playlist_path.clone(),
-        String::from("Test dynamic playlist"),
-        vec!(source_playlist.clone()),
-        vec!(source_library.clone()),
-    );
-
-    check_dyn_playlist_with_both_sources(reloaded_playlist, source_playlist, source_library);
-}
-
-#[test]
 fn test_dynamic_window_tiny() {
     let mut dyn_playlist = korama::Playlist::new(String::from("Test dynamic playlist"));
 

@@ -1,7 +1,4 @@
 Make lib:
-  Playlist:
-    - save/load include dynamic sources
-
   Queue:
     - Support adding track to queue.
     - Support removing track from queue.
@@ -13,3 +10,6 @@ Make lib:
     - Support skipping current track.
     - Support setting previous track on queue (pre-loaded).
     - Support jumping to previous track.
+
+  Curses frontend:
+    - To be planned
