@@ -1,14 +1,11 @@
 Make lib:
   Queue:
-    - Support adding track to queue.
-    - Support removing track from queue.
-    - Ensure next track in queue always pre-loads the track data.
+    - Plays from one playlist
     - Support playing current track.
     - Support pausing current track.
     - Support resuming current track.
     - Support jumping to start of current track.
     - Support skipping current track.
-    - Support setting previous track on queue (pre-loaded).
     - Support jumping to previous track.
 
   Curses frontend:
