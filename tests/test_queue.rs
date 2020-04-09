@@ -1,4 +1,5 @@
 use korama;
+use korama::Saveable;
 
 
 #[test]
@@ -7,7 +8,7 @@ fn set_queue_playlist() {
 
     let mut queue = korama::Queue::new();
 
-    queue.use_playlist(&playlist);
+    queue.use_playlist(playlist);
 
-    assert_eq!(queue.get_playlist().get_name(), String::from("Test playlist for queue"));
+    assert_eq!(queue.get_playlist().unwrap().get_name(), String::from("Test playlist for queue"));
 }
