@@ -78,41 +78,6 @@ impl Playlist {
         &self.tracks.remove(index);
     }
 
-    pub fn next(&mut self) -> Option<&Track> {
-        match self.pos {
-            Some(pos) => self.pos = Some(min(pos + 1, self.tracks.len())),
-            None => self.pos = Some(0),
-        };
-
-        if self.pos.unwrap() < self.tracks.len() {
-            self.tracks.get(self.pos.unwrap())
-        } else {
-            let mut next_track:Option<Track> = None;
-            let window = self.window.clone();
-            while next_track == None {
-                next_track = self.get_random_next_track();
-                match &next_track {
-                    Some(track) => {
-                        if window.contains(&track) {
-                            next_track = None;
-                        };
-                    },
-                    // If we receive None then for some reason we can't get a
-                    // next track, so return it.
-                    None => break,
-                };
-            };
-            match next_track {
-                Some(track) => {
-                    self.add_to_window(track.clone());
-                    self.add_track(track.clone());
-                    self.tracks.get(self.tracks.len() -1)
-                },
-                None => None,
-            }
-        }
-    }
-
     pub fn prev(&mut self) -> Option<&Track> {
         let mut result = None;
         match self.pos {
@@ -259,5 +224,47 @@ impl Saveable for Playlist {
 impl DynamicSource for Playlist {
     fn get_tracks(&self) -> Vec<Track> {
         self.tracks.clone()
+    }
+}
+
+impl Iterator for Playlist {
+    type Item = Track;
+
+    fn next(&mut self) -> Option<Track> {
+        match self.pos {
+            Some(pos) => self.pos = Some(min(pos + 1, self.tracks.len())),
+            None => self.pos = Some(0),
+        };
+
+        if self.pos.unwrap() < self.tracks.len() {
+            match self.tracks.get(self.pos.unwrap()) {
+                Some(track) => Some(*track),
+                None => None,
+            }
+        } else {
+            let mut next_track:Option<Track> = None;
+            let window = self.window.clone();
+            while next_track == None {
+                next_track = self.get_random_next_track();
+                match &next_track {
+                    Some(track) => {
+                        if window.contains(&track) {
+                            next_track = None;
+                        };
+                    },
+                    // If we receive None then for some reason we can't get a
+                    // next track, so return it.
+                    None => break,
+                };
+            };
+            match next_track {
+                Some(track) => {
+                    self.add_to_window(track.clone());
+                    self.add_track(track.clone());
+                    Some(track)
+                },
+                None => None,
+            }
+        }
     }
 }
