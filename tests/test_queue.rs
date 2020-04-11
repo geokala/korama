@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use korama;
 use korama::Saveable;
+use std::{thread,time};
 
 
 #[test]
@@ -29,9 +30,8 @@ fn play_tracks() {
 
     queue.play();
 
-    while queue.is_playing() {
-        // TODO: SLEEP briefly
-    };
+    // TODO: We should have something on the object that allows us to wait for playback to finish
+    thread::sleep(time::Duration::from_secs(3));
 
     let result = queue.get_history();
 

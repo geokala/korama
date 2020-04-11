@@ -31,8 +31,8 @@ impl Queue {
         self.playlist
     }
 
-    pub fn play(mut self) {
-        for track in self.playlist {
+    pub fn play(&self) {
+        for track in self.playlist.unwrap() {
             let file = File::open(track.path).unwrap();
             let source = rodio::Decoder::new(BufReader::new(file)).unwrap();
             self.sink.append(source);
@@ -40,12 +40,7 @@ impl Queue {
         self.sink.play()
     }
 
-    pub fn is_playing(self) -> bool {
-        // We are playing unless we are empty or paused
-        !(self.sink.empty() | self.sink.is_paused())
-    }
-
-    pub fn history(self) -> Vec<Track> {
+    pub fn get_history(&self) -> Vec<Track> {
         self.history.clone()
     }
 }
