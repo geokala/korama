@@ -78,7 +78,7 @@ impl Playlist {
         &self.tracks.remove(index);
     }
 
-    pub fn prev(&mut self) -> Option<&Track> {
+    pub fn prev(&mut self) -> Option<Track> {
         let mut result = None;
         match self.pos {
             Some(pos) => {
@@ -87,7 +87,10 @@ impl Playlist {
                     result = None;
                 } else {
                     self.pos = Some(pos - 1);
-                    result = self.tracks.get(self.pos.unwrap());
+                    match self.tracks.get(self.pos.unwrap()) {
+                        Some(track) => result = Some(track.clone()),
+                        None => (),
+                    };
                 }
             }
             None => (),
@@ -169,8 +172,11 @@ impl Playlist {
         }
     }
 
-    pub fn get(&self, pos: usize) -> Option<&Track> {
-        self.tracks.get(pos)
+    pub fn get(&self, pos: usize) -> Option<Track> {
+        match self.tracks.get(pos) {
+            Some(track) => Some(track.clone()),
+            None => None,
+        }
     }
 
     pub fn add_dynamic_playlist_source(&mut self, source: Playlist) {
@@ -238,7 +244,7 @@ impl Iterator for Playlist {
 
         if self.pos.unwrap() < self.tracks.len() {
             match self.tracks.get(self.pos.unwrap()) {
-                Some(track) => Some(*track),
+                Some(track) => Some(track.clone()),
                 None => None,
             }
         } else {

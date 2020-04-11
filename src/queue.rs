@@ -4,6 +4,8 @@ use std::fs::File;
 use std::io::BufReader;
 use rodio::Sink;
 
+use crate::shared::Saveable;
+
 
 pub struct Queue {
     playlist: Option<Playlist>,
@@ -30,7 +32,7 @@ impl Queue {
     }
 
     pub fn play(mut self) {
-        for track in self.playlist.iter() {
+        for track in self.playlist {
             let file = File::open(track.path).unwrap();
             let source = rodio::Decoder::new(BufReader::new(file)).unwrap();
             self.sink.append(source);
