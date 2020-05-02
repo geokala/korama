@@ -31,10 +31,14 @@ impl Queue {
         self.playlist
     }
 
-    pub fn play(&self) {
-        for track in self.playlist.unwrap() {
-            let file = File::open(track.path).unwrap();
-            let source = rodio::Decoder::new(BufReader::new(file)).unwrap();
+    pub fn play(&mut self) {
+        for track in self.playlist.as_mut().unwrap() {
+            let file = File::open(&track.path).unwrap();
+            let source = match rodio::Decoder::new(BufReader::new(file)) {
+                Ok(src) => src,
+                // TODO: This should be logging, not panicking.
+                Err(err) => panic!("Could not play file: {}: {:#?}", &track.path, err),
+            };
             self.sink.append(source);
         };
         self.sink.play()
