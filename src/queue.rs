@@ -7,13 +7,11 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
-use crate::shared::Saveable;
-
 
 pub struct Queue {
     playlist: Option<Playlist>,
     history: Vec<Track>,
-    player_controller: mpsc::Sender,
+    player_controller: Option<mpsc::Sender<String>>,
 }
 
 impl Queue {
@@ -21,7 +19,7 @@ impl Queue {
         Queue{
             playlist: None,
             history: Vec::new(),
-            player_controller: self.create_player(),
+            player_controller: None,
         }
     }
 
@@ -33,13 +31,21 @@ impl Queue {
         self.playlist
     }
 
+    fn get_controller(&mut self) -> mpsc::Sender<String> {
+         match self.player_controller {
+             Some(_) => (),
+             None => self.create_player()
+         };
+         self.player_controller.unwrap()
+    }
+
     fn create_player(&mut self) {
          let (sender, receiver) = mpsc::channel();
          thread::spawn(move || {
              let device = rodio::default_output_device().unwrap();
-             let sink = rodio::Sink::new(&device),
+             let sink = Sink::new(&device);
              let mut playing = false;
-             while true {
+             loop {
                  let received = receiver.try_recv();
                  match received {
                      Ok(msg) => {
@@ -54,20 +60,21 @@ impl Queue {
                      thread::sleep(Duration::from_millis(50));
                      continue;
                  };
-                 if sink.is_empty() {
+                 if sink.empty() {
                      let next_track = self.playlist.as_mut().unwrap().next();
                      match next_track {
                          Some(track) => {
                              self.history.push(track.clone());
+                             let file = File::open(track.path).unwrap();
                              let source = match rodio::Decoder::new(BufReader::new(file)) {
                                  Ok(src) => src,
                                  // TODO: This should be logging, not panicking.
                                  Err(err) => panic!("Could not play file: {}: {:#?}", &track.path, err),
                              };
-                             self.sink.append(source);
-                             self.sink.play();
+                             sink.append(source);
+                             sink.play();
                          },
-                         None => thread::sleep(Duration::from_millis(50));
+                         None => thread::sleep(Duration::from_millis(50)),
                      };
                  } else {
                      // There is a track playing, wait
@@ -75,10 +82,11 @@ impl Queue {
                  }
              };
          });
+         self.player_controller = Some(sender);
     }
 
     pub fn play(&mut self) {
-        self.player_controller.send(String::from("play"));
+        self.get_controller().send(String::from("play"));
     }
 
     pub fn get_history(&self) -> Vec<Track> {
