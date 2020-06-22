@@ -34,12 +34,12 @@ impl Queue {
     fn get_controller(&mut self) -> mpsc::Sender<String> {
          match self.player_controller {
              Some(_) => (),
-             None => self.create_player()
+             None => self.player_controller = Some(self.create_player()),
          };
          self.player_controller.unwrap()
     }
 
-    fn create_player(&mut self) {
+    fn create_player<'a>(&mut self) -> 'a mpsc::Sender<String> {
          let (sender, receiver) = mpsc::channel();
          thread::spawn(move || {
              let device = rodio::default_output_device().unwrap();
@@ -82,7 +82,7 @@ impl Queue {
                  }
              };
          });
-         self.player_controller = Some(sender);
+         sender
     }
 
     pub fn play(&mut self) {
