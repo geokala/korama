@@ -11,7 +11,7 @@ use std::time::Duration;
 
 pub struct Queue {
     playlist: Mutex<Option<Playlist>>,
-    history: Vec<Track>,
+    history: Mutex<Vec<Track>>,
     player_controller: Option<mpsc::Sender<String>>,
     playlist_controller: Option<mpsc::Sender<Playlist>>,
 }
@@ -20,7 +20,7 @@ impl Queue {
     pub fn new() -> Queue {
         Queue{
             playlist: Mutex::new(None),
-            history: Vec::new(),
+            history: Mutex::new(Vec::new()),
             player_controller: None,
             playlist_controller: None,
         }
@@ -48,7 +48,6 @@ impl Queue {
              let device = rodio::default_output_device().unwrap();
              let sink = Sink::new(&device);
              let mut playing = false;
-             let mut playlist = Mutex::new(Playlist::new(String::from("Empty")));
              loop {
                  let received = receiver.try_recv();
                  match received {
@@ -66,11 +65,11 @@ impl Queue {
                  };
                  if sink.empty() {
                      // TODO: Where self is used here it needs to not be, somehow
-                     let next_track = playlist.lock().unwrap().next();
+                     let next_track = self.playlist.get_mut().unwrap().unwrap().next();
                      //let next_track: std::option::Option<String> = None;
                      match next_track {
                          Some(file) => {
-                             //self.history.push(track.clone());
+                             self.history.get_mut().unwrap().push(next_track.unwrap().clone());
                              let file = File::open("test.txt").unwrap();
                              let source = match rodio::Decoder::new(BufReader::new(file)) {
                                  Ok(src) => src,
@@ -97,6 +96,6 @@ impl Queue {
     }
 
     pub fn get_history(&self) -> Vec<Track> {
-        self.history.clone()
+        self.history.lock().unwrap().clone()
     }
 }
