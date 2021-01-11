@@ -4,12 +4,13 @@ use std::fs::File;
 use std::io::BufReader;
 use rodio::Sink;
 use std::sync::mpsc;
+use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 
 
 pub struct Queue {
-    playlist: Option<Playlist>,
+    playlist: Mutex<Option<Playlist>>,
     history: Vec<Track>,
     player_controller: Option<mpsc::Sender<String>>,
     playlist_controller: Option<mpsc::Sender<Playlist>>,
@@ -18,7 +19,7 @@ pub struct Queue {
 impl Queue {
     pub fn new() -> Queue {
         Queue{
-            playlist: None,
+            playlist: Mutex::new(None),
             history: Vec::new(),
             player_controller: None,
             playlist_controller: None,
@@ -26,20 +27,11 @@ impl Queue {
     }
 
     pub fn use_playlist(&mut self, playlist: Playlist) {
-        self.playlist = Some(playlist.clone());
-        self.get_playlist_controller().send(playlist);
+        self.playlist = Mutex::new(Some(playlist));
     }
 
     pub fn get_playlist(self) -> Option<Playlist> {
-        self.playlist
-    }
-
-    fn get_playlist_controller(&mut self) -> &mpsc::Sender<Playlist> {
-         match self.playlist_controller {
-             Some(_) => (),
-             None => self.create_player(),
-         };
-         self.playlist_controller.as_ref().unwrap()
+        self.playlist.lock().unwrap().clone()
     }
 
     fn get_controller(&mut self) -> &mpsc::Sender<String> {
@@ -52,12 +44,11 @@ impl Queue {
 
     fn create_player(&mut self) {
          let (sender, receiver) = mpsc::channel();
-         let (playlist_sender, playlist_receiver) = mpsc::channel();
          thread::spawn(move || {
              let device = rodio::default_output_device().unwrap();
              let sink = Sink::new(&device);
              let mut playing = false;
-             let mut playlist = Playlist::new(String::from("Empty"));
+             let mut playlist = Mutex::new(Playlist::new(String::from("Empty")));
              loop {
                  let received = receiver.try_recv();
                  match received {
@@ -69,21 +60,13 @@ impl Queue {
                      Err(_) => (),
                  };
 
-                 let received_playlist = playlist_receiver.try_recv();
-                 match received_playlist {
-                     Ok(msg) => {
-                         playlist = msg;
-                     },
-                     Err(_) => (),
-                 };
-
                  if !playing {
                      thread::sleep(Duration::from_millis(50));
                      continue;
                  };
                  if sink.empty() {
                      // TODO: Where self is used here it needs to not be, somehow
-                     let next_track = playlist.next();
+                     let next_track = playlist.lock().unwrap().next();
                      //let next_track: std::option::Option<String> = None;
                      match next_track {
                          Some(file) => {
@@ -107,7 +90,6 @@ impl Queue {
              };
          });
          self.player_controller = Some(sender);
-         self.playlist_controller = Some(playlist_sender);
     }
 
     pub fn play(&mut self) {
