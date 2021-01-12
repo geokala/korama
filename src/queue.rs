@@ -4,30 +4,28 @@ use std::fs::File;
 use std::io::BufReader;
 use rodio::Sink;
 use std::sync::mpsc;
-use std::sync::Mutex;
+use std::sync::{Arc,Mutex};
 use std::thread;
 use std::time::Duration;
 
 
 pub struct Queue {
-    playlist: Mutex<Option<Playlist>>,
-    history: Mutex<Vec<Track>>,
+    playlist: Arc<Mutex<Option<Playlist>>>,
+    history: Arc<Mutex<Vec<Track>>>,
     player_controller: Option<mpsc::Sender<String>>,
-    playlist_controller: Option<mpsc::Sender<Playlist>>,
 }
 
 impl Queue {
     pub fn new() -> Queue {
         Queue{
-            playlist: Mutex::new(None),
-            history: Mutex::new(Vec::new()),
+            playlist: Arc::new(Mutex::new(None)),
+            history: Arc::new(Mutex::new(Vec::new())),
             player_controller: None,
-            playlist_controller: None,
         }
     }
 
     pub fn use_playlist(&mut self, playlist: Playlist) {
-        self.playlist = Mutex::new(Some(playlist));
+        self.playlist = Arc::new(Mutex::new(Some(playlist)));
     }
 
     pub fn get_playlist(self) -> Option<Playlist> {
@@ -44,6 +42,8 @@ impl Queue {
 
     fn create_player(&mut self) {
          let (sender, receiver) = mpsc::channel();
+         let playlist = self.playlist.clone();
+         let history = self.history.clone();
          thread::spawn(move || {
              let device = rodio::default_output_device().unwrap();
              let sink = Sink::new(&device);
@@ -65,12 +65,11 @@ impl Queue {
                  };
                  if sink.empty() {
                      // TODO: Where self is used here it needs to not be, somehow
-                     let next_track = self.playlist.get_mut().unwrap().unwrap().next();
-                     //let next_track: std::option::Option<String> = None;
+                     let next_track = playlist.lock().unwrap().as_mut().unwrap().next();
                      match next_track {
-                         Some(file) => {
-                             self.history.get_mut().unwrap().push(next_track.unwrap().clone());
-                             let file = File::open("test.txt").unwrap();
+                         Some(track) => {
+                             history.lock().unwrap().push(track.clone());
+                             let file = File::open(track.path).unwrap();
                              let source = match rodio::Decoder::new(BufReader::new(file)) {
                                  Ok(src) => src,
                                  // TODO: This should be logging, not panicking.
