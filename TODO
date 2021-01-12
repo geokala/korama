@@ -1,7 +1,5 @@
 Make lib:
   Queue:
-    - Plays from one playlist
-    - Hold history of tracks played
     - Support truncating history
     - Support playing current track.
     - Support pausing current track.
