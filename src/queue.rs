@@ -97,4 +97,8 @@ impl Queue {
     pub fn get_history(&self) -> Vec<Track> {
         self.history.lock().unwrap().clone()
     }
+
+    pub fn set_history(&self, new_history: Vec<Track>) {
+        std::mem::replace(&mut *self.history.lock().unwrap(), new_history);
+    }
 }
