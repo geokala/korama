@@ -1,7 +1,6 @@
 Make lib:
   Queue:
     - Support pausing current track.
-    - Support playing current track.
     - Support resuming current track.
     - Support jumping to start of current track.
     - Support skipping current track.
