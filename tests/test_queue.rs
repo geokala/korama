@@ -16,6 +16,40 @@ fn set_queue_playlist() {
 }
 
 #[test]
+fn set_history() {
+    let mut queue = korama::Queue::new();
+
+    let result = queue.get_history();
+    let expected = vec![];
+
+    assert!(result == expected,
+            "Results not as expected.\nResults were:\n{}\nExpected:\n{}",
+            generate_track_output(result),
+            generate_track_output(expected),
+            );
+
+    let update = vec![
+        korama::Track{
+            track_name: String::from("Not a real track"),
+            artist: String::from("Really not"),
+            album: String::from("It doesn't exist"),
+            track_number: String::from("e"),
+            path: String::from("/not/real/at/all"),
+        },
+    ];
+
+    queue.set_history(update.clone());
+
+    let updated_result = queue.get_history();
+
+    assert!(updated_result == update,
+            "Results not as expected.\nResults were:\n{}\nExpected:\n{}",
+            generate_track_output(updated_result),
+            generate_track_output(update),
+            );
+}
+
+#[test]
 fn play_tracks() {
     let mut library = set_up_test_library();
     library.scan();
