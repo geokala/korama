@@ -64,8 +64,9 @@ fn play_tracks() {
 
     queue.play();
 
-    // TODO: We should have something on the object that allows us to wait for playback to finish
-    thread::sleep(time::Duration::from_secs(3));
+    while queue.is_playing() {
+      thread::sleep(time::Duration::from_millis(50));
+    };
 
     let result = queue.get_history();
 

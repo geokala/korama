@@ -3,16 +3,28 @@ use crate::track::Track;
 use std::fs::File;
 use std::io::BufReader;
 use rodio::Sink;
-use std::sync::mpsc;
 use std::sync::{Arc,Mutex};
 use std::thread;
 use std::time::Duration;
 
+#[derive(PartialEq)]
+#[derive(PartialOrd)]
+pub enum QueueAction {
+    Stopped = 0,
+    Stopping = 1,
+    Preparing = 2,
+    Playing = 3,
+}
+
+struct QueueState {
+    pub current_track: Option<Track>,
+    pub action: QueueAction,
+}
 
 pub struct Queue {
     playlist: Arc<Mutex<Option<Playlist>>>,
     history: Arc<Mutex<Vec<Track>>>,
-    player_controller: Option<mpsc::Sender<String>>,
+    state: Arc<Mutex<QueueState>>,
 }
 
 impl Queue {
@@ -20,7 +32,10 @@ impl Queue {
         Queue{
             playlist: Arc::new(Mutex::new(None)),
             history: Arc::new(Mutex::new(Vec::new())),
-            player_controller: None,
+            state: Arc::new(Mutex::new(QueueState {
+                current_track: None,
+                action: QueueAction::Stopped,
+            })),
         }
     }
 
@@ -32,54 +47,46 @@ impl Queue {
         self.playlist.lock().unwrap().clone()
     }
 
-    fn get_controller(&mut self) -> &mpsc::Sender<String> {
-         match self.player_controller {
-             Some(_) => (),
-             None => self.create_player(),
-         };
-         self.player_controller.as_ref().unwrap()
-    }
-
     fn create_player(&mut self) {
-         let (sender, receiver) = mpsc::channel();
          let playlist = self.playlist.clone();
          let history = self.history.clone();
+         let state = self.state.clone();
          thread::spawn(move || {
              let device = rodio::default_output_device().unwrap();
              let sink = Sink::new(&device);
-             let mut playing = false;
              loop {
-                 let received = receiver.try_recv();
-                 match received {
-                     Ok(msg) => {
-                         if msg == String::from("play") {
-                             playing = true;
-                         };
-                     },
-                     Err(_) => (),
-                 };
-
-                 if !playing {
+                 if state.lock().unwrap().action <= QueueAction::Stopping {
                      thread::sleep(Duration::from_millis(50));
+                     state.lock().unwrap().action = QueueAction::Stopped;
                      continue;
                  };
                  if sink.empty() {
-                     // TODO: Where self is used here it needs to not be, somehow
+                     if state.lock().unwrap().action != QueueAction::Playing {
+                         state.lock().unwrap().action = QueueAction::Playing;
+                     };
                      let next_track = playlist.lock().unwrap().as_mut().unwrap().next();
                      match next_track {
                          Some(track) => {
-                             history.lock().unwrap().push(track.clone());
+                             state.lock().unwrap().current_track = Some(track.clone());
                              let file = File::open(track.path).unwrap();
                              let source = match rodio::Decoder::new(BufReader::new(file)) {
                                  Ok(src) => src,
                                  // TODO: This should be logging, not panicking.
                                  //Err(err) => panic!("Could not play file: {}: {:#?}", &track.path, err),
-                                 Err(err) => panic!("Sad time"),
+                                 Err(_) => panic!("Sad time"),
                              };
                              sink.append(source);
                              sink.play();
                          },
-                         None => thread::sleep(Duration::from_millis(50)),
+                         None => {
+                             match &state.lock().unwrap().current_track {
+                                 Some(just_played) => history.lock().unwrap().push(just_played.clone()),
+                                 None => (),
+                             };
+                             state.lock().unwrap().current_track = None;
+                             state.lock().unwrap().action = QueueAction::Stopped;
+                             thread::sleep(Duration::from_millis(50));
+                         },
                      };
                  } else {
                      // There is a track playing, wait
@@ -87,11 +94,14 @@ impl Queue {
                  }
              };
          });
-         self.player_controller = Some(sender);
     }
 
     pub fn play(&mut self) {
-        self.get_controller().send(String::from("play"));
+        self.state.lock().unwrap().action = QueueAction::Preparing;
+    }
+
+    pub fn is_playing(&self) -> bool {
+        return self.state.lock().unwrap().action >= QueueAction::Preparing;
     }
 
     pub fn get_history(&self) -> Vec<Track> {
