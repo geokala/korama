@@ -10,10 +10,10 @@ use std::time::Duration;
 #[derive(PartialEq)]
 #[derive(PartialOrd)]
 pub enum QueueAction {
-    Stopped = 0,
-    Stopping = 1,
-    Preparing = 2,
-    Playing = 3,
+    Stopped,
+    Stopping,
+    Preparing,
+    Playing,
 }
 
 struct QueueState {
@@ -25,6 +25,7 @@ pub struct Queue {
     playlist: Arc<Mutex<Option<Playlist>>>,
     history: Arc<Mutex<Vec<Track>>>,
     state: Arc<Mutex<QueueState>>,
+    player_created: bool,
 }
 
 impl Queue {
@@ -36,6 +37,7 @@ impl Queue {
                 current_track: None,
                 action: QueueAction::Stopped,
             })),
+            player_created: false,
         }
     }
 
@@ -57,7 +59,9 @@ impl Queue {
              loop {
                  if state.lock().unwrap().action <= QueueAction::Stopping {
                      thread::sleep(Duration::from_millis(50));
-                     state.lock().unwrap().action = QueueAction::Stopped;
+                     if state.lock().unwrap().action != QueueAction::Stopped {
+                         state.lock().unwrap().action = QueueAction::Stopped;
+                     };
                      continue;
                  };
                  if sink.empty() {
@@ -68,6 +72,7 @@ impl Queue {
                      match next_track {
                          Some(track) => {
                              state.lock().unwrap().current_track = Some(track.clone());
+                             history.lock().unwrap().push(track.clone());
                              let file = File::open(track.path).unwrap();
                              let source = match rodio::Decoder::new(BufReader::new(file)) {
                                  Ok(src) => src,
@@ -79,10 +84,6 @@ impl Queue {
                              sink.play();
                          },
                          None => {
-                             match &state.lock().unwrap().current_track {
-                                 Some(just_played) => history.lock().unwrap().push(just_played.clone()),
-                                 None => (),
-                             };
                              state.lock().unwrap().current_track = None;
                              state.lock().unwrap().action = QueueAction::Stopped;
                              thread::sleep(Duration::from_millis(50));
@@ -97,6 +98,9 @@ impl Queue {
     }
 
     pub fn play(&mut self) {
+        if !self.player_created {
+            self.create_player();
+        };
         self.state.lock().unwrap().action = QueueAction::Preparing;
     }
 

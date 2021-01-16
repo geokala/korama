@@ -17,7 +17,7 @@ fn set_queue_playlist() {
 
 #[test]
 fn set_history() {
-    let mut queue = korama::Queue::new();
+    let queue = korama::Queue::new();
 
     let result = queue.get_history();
     let expected = vec![];
