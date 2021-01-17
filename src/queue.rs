@@ -8,11 +8,8 @@ use std::thread;
 use std::time::Duration;
 
 #[derive(PartialEq)]
-#[derive(PartialOrd)]
 pub enum QueueAction {
     Stopped,
-    Stopping,
-    Preparing,
     Playing,
 }
 
@@ -57,17 +54,11 @@ impl Queue {
              let device = rodio::default_output_device().unwrap();
              let sink = Sink::new(&device);
              loop {
-                 if state.lock().unwrap().action <= QueueAction::Stopping {
+                 if state.lock().unwrap().action == QueueAction::Stopped {
                      thread::sleep(Duration::from_millis(50));
-                     if state.lock().unwrap().action != QueueAction::Stopped {
-                         state.lock().unwrap().action = QueueAction::Stopped;
-                     };
                      continue;
                  };
                  if sink.empty() {
-                     if state.lock().unwrap().action != QueueAction::Playing {
-                         state.lock().unwrap().action = QueueAction::Playing;
-                     };
                      let next_track = playlist.lock().unwrap().as_mut().unwrap().next();
                      match next_track {
                          Some(track) => {
@@ -101,11 +92,11 @@ impl Queue {
         if !self.player_created {
             self.create_player();
         };
-        self.state.lock().unwrap().action = QueueAction::Preparing;
+        self.state.lock().unwrap().action = QueueAction::Playing;
     }
 
     pub fn is_playing(&self) -> bool {
-        return self.state.lock().unwrap().action >= QueueAction::Preparing;
+        return self.state.lock().unwrap().action == QueueAction::Playing;
     }
 
     pub fn get_history(&self) -> Vec<Track> {
