@@ -1,10 +1,11 @@
 Make lib:
   Queue:
+    - Test behaviour of queue skip back on first track (should do nothing)
+    - Test behaviour of queue skip forward on last track (should immediately stop playing)
+    - Test behaviour of queue skip back/forward with empty playlist (NOP)
     - Support pausing current track.
     - Support resuming current track.
     - Support jumping to start of current track.
-    - Support skipping current track.
-    - Support jumping to previous track.
 
   Curses frontend:
     - To be planned
