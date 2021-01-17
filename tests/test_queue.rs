@@ -51,7 +51,7 @@ fn set_history() {
 
 #[test]
 fn play_tracks() {
-    let mut library = set_up_test_library();
+    let mut library = set_up_test_library(String::from("library"));
     library.scan();
 
     let mut playlist = korama::Playlist::new(String::from("Test playlist for queue"));
@@ -129,6 +129,68 @@ fn play_tracks() {
             );
 }
 
+#[test]
+fn test_skipping() {
+    let mut library = set_up_test_library(String::from("longer"));
+    library.scan();
+
+    let mut playlist = korama::Playlist::new(String::from("Test playlist for queue"));
+    for track in library.get_tracks_by_title() {
+        playlist.add_track(track.clone());
+    };
+
+    let mut queue = korama::Queue::new();
+    queue.use_playlist(playlist);
+
+    queue.play();
+    queue.skip_forward();
+    queue.skip_back();
+    queue.skip_forward();
+
+    while queue.is_playing() {
+      thread::sleep(time::Duration::from_millis(50));
+    };
+
+    let result = queue.get_history();
+
+    let expected = vec![
+        korama::Track{
+            track_name: String::from("Test"),
+            artist: String::from("Test"),
+            album: String::from("Test"),
+            track_number: String::from("1"),
+            path: get_longer_track_path(String::from("2.6_second.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("Test2"),
+            artist: String::from("Test2"),
+            album: String::from("Test2"),
+            track_number: String::from("2"),
+            path: get_longer_track_path(String::from("2.6_second_2.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("Test"),
+            artist: String::from("Test"),
+            album: String::from("Test"),
+            track_number: String::from("1"),
+            path: get_longer_track_path(String::from("2.6_second.mp3")),
+        },
+        korama::Track{
+            track_name: String::from("Test2"),
+            artist: String::from("Test2"),
+            album: String::from("Test2"),
+            track_number: String::from("2"),
+            path: get_longer_track_path(String::from("2.6_second_2.mp3")),
+        },
+    ];
+
+    assert!(result == expected,
+            "Results not as expected.\nResults were:\n{}\nExpected:\n{}",
+            generate_track_output(result),
+            generate_track_output(expected),
+            );
+}
+
 fn generate_track_output(tracks: Vec<korama::Track>) -> String {
     let mut output = String::from("");
     output.push_str("Found ");
@@ -151,15 +213,27 @@ fn generate_track_output(tracks: Vec<korama::Track>) -> String {
 }
 
 fn get_full_track_path(rel_path: String) -> String {
-    let mut file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    file_path.push("resources/test/library");
-    file_path.push(rel_path);
-    file_path.to_str().unwrap().to_string()
+    _get_library_track_path(rel_path, String::from("library"))
 }
 
-fn set_up_test_library() -> korama::MusicLibrary {
+fn get_longer_track_path(rel_path: String) -> String {
+    _get_library_track_path(rel_path, String::from("longer"))
+}
+
+fn _get_library_track_path(rel_path: String, library: String) -> String {
+    let mut file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    file_path.push("resources/test");
+    file_path.push(library);
+    file_path.push(rel_path);
+    file_path.to_str().unwrap().to_string()
+
+}
+
+
+fn set_up_test_library(library: String) -> korama::MusicLibrary {
     let mut test_library_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    test_library_path.push("resources/test/library");
+    test_library_path.push("resources/test");
+    test_library_path.push(library);
 
     korama::MusicLibrary::new(
         String::from("Test library"),

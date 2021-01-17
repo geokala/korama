@@ -95,6 +95,14 @@ impl Queue {
         self.state.lock().unwrap().action = QueueAction::Playing;
     }
 
+    pub fn skip_forward(&mut self) {
+        ()
+    }
+
+    pub fn skip_back(&mut self) {
+        ()
+    }
+
     pub fn is_playing(&self) -> bool {
         return self.state.lock().unwrap().action == QueueAction::Playing;
     }
