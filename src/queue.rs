@@ -14,6 +14,7 @@ pub enum QueueActivity {
     Playing,
 }
 
+#[derive(PartialEq)]
 pub enum QueueAction {
     SkipForward,
     SkipBack,
@@ -71,14 +72,27 @@ impl Queue {
         let (sender, receiver) = mpsc::channel();
         thread::spawn(move || {
             let device = rodio::default_output_device().unwrap();
-            let sink = Sink::new(&device);
+            let mut sink = Sink::new(&device);
             loop {
                 let received = receiver.try_recv();
-                let new_sink = match received {
+                match received {
                     Ok(msg) => {
-                        if msg == QueueAction::skip() {
-                            sink.drop();
-                            Sink::new(&device)
+                        if msg == QueueAction::SkipForward {
+                            sink = Sink::new(&device);
+                        } else if msg == QueueAction::SkipBack {
+                            sink = Sink::new(&device);
+                            let prev = history.lock().unwrap().last().unwrap().clone();
+                            state.lock().unwrap().current_track = Some(prev.clone());
+                            history.lock().unwrap().push(prev.clone());
+                            let file = File::open(prev.path).unwrap();
+                            let source = match rodio::Decoder::new(BufReader::new(file)) {
+                                Ok(src) => src,
+                                // TODO: This should be logging, not panicking.
+                                //Err(err) => panic!("Could not play file: {}: {:#?}", &track.path, err),
+                                Err(_) => panic!("Sad time"),
+                            };
+                            sink.append(source);
+                            sink.play();
                         };
                     },
                     Err(_) => (),
