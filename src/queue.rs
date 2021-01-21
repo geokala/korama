@@ -53,72 +53,72 @@ impl Queue {
     }
 
     fn get_controller(&mut self) -> &mpsc::Sender<QueueAction> {
-         match self.player_controller {
-             Some(_) => (),
-             None => self.create_player(),
-         };
-         self.player_controller.as_ref().unwrap()
+        match self.player_controller {
+            Some(_) => (),
+            None => self.create_player(),
+        };
+        self.player_controller.as_ref().unwrap()
     }
 
     fn create_player(&mut self) {
-         match self.player_controller {
-             Some(_) => return,
-             None => (),
-         };
-         let playlist = self.playlist.clone();
-         let history = self.history.clone();
-         let state = self.state.clone();
-         let (sender, receiver) = mpsc::channel();
-         thread::spawn(move || {
-             let device = rodio::default_output_device().unwrap();
-             let sink = Sink::new(&device);
-             loop {
-                 let received = receiver.try_recv();
-                 let new_sink = match received {
-                     Ok(msg) => {
-                         if msg == QueueAction::skip() {
-                             sink.drop();
-                             Sink::new(&device)
-                         };
-                     },
-                     Err(_) => (),
-                 };
+        match self.player_controller {
+            Some(_) => return,
+            None => (),
+        };
+        let playlist = self.playlist.clone();
+        let history = self.history.clone();
+        let state = self.state.clone();
+        let (sender, receiver) = mpsc::channel();
+        thread::spawn(move || {
+            let device = rodio::default_output_device().unwrap();
+            let sink = Sink::new(&device);
+            loop {
+                let received = receiver.try_recv();
+                let new_sink = match received {
+                    Ok(msg) => {
+                        if msg == QueueAction::skip() {
+                            sink.drop();
+                            Sink::new(&device)
+                        };
+                    },
+                    Err(_) => (),
+                };
 
-                 if state.lock().unwrap().action == QueueActivity::Stopped {
-                     thread::sleep(Duration::from_millis(50));
-                     continue;
-                 };
+                if state.lock().unwrap().action == QueueActivity::Stopped {
+                    thread::sleep(Duration::from_millis(50));
+                    continue;
+                };
 
-                 if sink.empty() {
+                if sink.empty() {
 
-                     let next_track = playlist.lock().unwrap().as_mut().unwrap().next();
-                     match next_track {
-                         Some(track) => {
-                             state.lock().unwrap().current_track = Some(track.clone());
-                             history.lock().unwrap().push(track.clone());
-                             let file = File::open(track.path).unwrap();
-                             let source = match rodio::Decoder::new(BufReader::new(file)) {
-                                 Ok(src) => src,
-                                 // TODO: This should be logging, not panicking.
-                                 //Err(err) => panic!("Could not play file: {}: {:#?}", &track.path, err),
-                                 Err(_) => panic!("Sad time"),
-                             };
-                             sink.append(source);
-                             sink.play();
-                         },
-                         None => {
-                             state.lock().unwrap().current_track = None;
-                             state.lock().unwrap().action = QueueActivity::Stopped;
-                             thread::sleep(Duration::from_millis(50));
-                         },
-                     };
-                 } else {
-                     // There is a track playing, wait
-                     thread::sleep(Duration::from_millis(50));
-                 }
-             };
-         });
-         self.player_controller = Some(sender);
+                    let next_track = playlist.lock().unwrap().as_mut().unwrap().next();
+                    match next_track {
+                        Some(track) => {
+                            state.lock().unwrap().current_track = Some(track.clone());
+                            history.lock().unwrap().push(track.clone());
+                            let file = File::open(track.path).unwrap();
+                            let source = match rodio::Decoder::new(BufReader::new(file)) {
+                                Ok(src) => src,
+                                // TODO: This should be logging, not panicking.
+                                //Err(err) => panic!("Could not play file: {}: {:#?}", &track.path, err),
+                                Err(_) => panic!("Sad time"),
+                            };
+                            sink.append(source);
+                            sink.play();
+                        },
+                        None => {
+                            state.lock().unwrap().current_track = None;
+                            state.lock().unwrap().action = QueueActivity::Stopped;
+                            thread::sleep(Duration::from_millis(50));
+                        },
+                    };
+                } else {
+                    // There is a track playing, wait
+                    thread::sleep(Duration::from_millis(50));
+                }
+            };
+        });
+        self.player_controller = Some(sender);
     }
 
     pub fn play(&mut self) {
