@@ -1,5 +1,6 @@
 Make lib:
   Queue:
+    - Need to remove use of sink (since it's basically useless (by design?) for practical purposes; re-work a simple play example by reviewing the code in https://github.com/RustAudio/rodio/blob/master/src/sink.rs and then rework the queue to use this approach instead).
     - Test behaviour of queue skip back on first track (should do nothing)
     - Test behaviour of queue skip forward on last track (should immediately stop playing)
     - Test behaviour of queue skip back/forward with empty playlist (NOP)
